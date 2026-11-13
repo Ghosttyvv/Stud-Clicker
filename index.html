@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LEGO Stud Clicker v1.46 — The Great Rebalance</title>
+<title>LEGO Stud Clicker v1.47 — Smooth Clicking</b><p>Optimised autoclicker performance: click visuals and screen updates are throttled, achievements are checked in batches, and sound effects are rate-limited. Click rewards still count.</p></div><div class="news-entry"><b>v1.47 — Smooth Clicking</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;padding:22px;font-family:Arial,sans-serif;background:#101827;color:#f4f6fb}
@@ -242,7 +242,7 @@ body.reduce-motion .golden.brick-appearing,body.reduce-motion .rainbow.brick-app
 
 <section class="panel">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-<div class="game-title"><div><h1>STUD CLICKER</h1><div class="update-subtitle">The Great Rebalance</div></div><span class="version-tag" title="The Great Rebalance">v1.46</span></div>
+<div class="game-title"><div><h1>STUD CLICKER</h1><div class="update-subtitle">Smooth Clicking</div></div><span class="version-tag" title="Smooth Clicking">v1.47</span></div>
 
 </div>
 
@@ -634,7 +634,9 @@ const rainbowAll=()=>rainbowOwned[0]?5:1;
 const rainbowAuto=()=>rainbowOwned[1]?12:1;
 const rainbowClick=()=>rainbowOwned[2]?12:1;
 const displayNum=fmt;
+let lastParticleAt=0,lastFloatAt=0,lastClickSoundAt=0,lastFullRenderAt=0,lastAchievementCheckAt=0;
 function spawnClickParticles(e){
+ const now=performance.now();if(now-lastParticleAt<100)return;lastParticleAt=now;
  if(clickEffect==='off'||settings.reducedMotion)return;
  const count=clickEffect==='burst'?9:clickEffect==='minimal'?1:5;
  for(let i=0;i<count;i++){
@@ -690,7 +692,7 @@ function spawnRainbow(now=Date.now()){
  el.style.left=rainbowX+"px";el.style.top=rainbowY+"px";
 }
 function endRainbow(){rainbowVisible=false;rainbowExpiresAt=0;$("rainbowBrick").style.display="none";}
-function playClickSound(){if(!settings.sound)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=470;gain.gain.value=.035;osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.035);osc.onended=()=>ctx.close();}catch{}}
+function playClickSound(){const now=performance.now();if(now-lastClickSoundAt<120)return;lastClickSoundAt=now;if(!settings.sound)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=470;gain.gain.value=.035;osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.035);osc.onended=()=>ctx.close();}catch{}}
 function updateSettings(){document.body.classList.toggle("reduce-motion",settings.reducedMotion);$("settingSound").checked=settings.sound;$("settingMotion").checked=settings.reducedMotion;}
 
 const skills=[
@@ -1290,7 +1292,10 @@ if(Number.isNaN(n)||n<=0)return;
 n=finiteCap(n);
 money=safeSum(money,n);total=safeSum(total,n);lifetimeStuds=safeSum(lifetimeStuds,n);
 if(isAuto){lifetimeAuto=safeSum(lifetimeAuto,n);if(runClicks===0){noClickRunStuds=safeSum(noClickRunStuds,n);bestNoClick=Math.max(bestNoClick,noClickRunStuds);}}
-checkAchievements();render();
+// Heavy achievement scans and DOM redraws run at most 10 times per second.
+const now=performance.now();
+if(now-lastAchievementCheckAt>=100){lastAchievementCheckAt=now;checkAchievements();}
+if(now-lastFullRenderAt>=100){lastFullRenderAt=now;render();}
 }
 
 $("brick").addEventListener("click",e=>{
@@ -1302,7 +1307,8 @@ if(comboMultiplier()>=5&&[frenzyUntil,clickStormUntil,overdriveUntil].filter(unt
 clicks++;runClicks++;
 const n=clickPower();
 gain(n);playClickSound();
-if(!settings.reducedMotion){
+if(!settings.reducedMotion&&performance.now()-lastFloatAt>=100){
+ lastFloatAt=performance.now();
  const f=document.createElement("span");f.className="float";
  f.textContent="+"+displayNum(n);
  f.style.left=e.clientX+"px";f.style.top=e.clientY+"px";
@@ -1617,7 +1623,7 @@ $("exportSave").addEventListener("click",()=>{
   const payload=savePayload();
   if(!isValidSave(payload))throw Error("Game data failed validation.");
   const content=JSON.stringify(payload,null,2);
-  saveFileDownload("lego-stud-clicker-v1.46-save.json",content);
+  saveFileDownload("lego-stud-clicker-v1.47-save.json",content);
   $("message").textContent="Save export started. Check your Downloads folder.";
  }catch(err){console.error("Export failed",err);alert("Could not export your save: "+err.message);}
 });
@@ -1826,6 +1832,7 @@ playSeconds+=elapsed;
 const n=sps()*elapsed;if(n>0)gain(n,true);
 else render();
 },100);
+setInterval(()=>{checkAchievements();render();},500);
 setInterval(saveGame,1000);
 window.addEventListener("pagehide",saveGame);
 window.addEventListener("beforeunload",saveGame);
