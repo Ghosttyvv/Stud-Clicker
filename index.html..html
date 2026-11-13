@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEGO Stud Clicker v1.46 — The Great Rebalance</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:22px;font-family:Arial,sans-serif;background:#101827;color:#f4f6fb}
+.game{max-width:850px;margin:auto;display:flex;flex-direction:column;gap:16px}
+.panel{background:linear-gradient(145deg,#17243a,#304461);color:white;border-radius:15px;padding:16px}
+.stats,.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.stat{background:#0004;padding:11px;border-radius:10px}
+.label{font-size:12px;color:#bfdbfe}
+.num{font-size:25px;font-weight:900;color:#facc15;margin-top:4px}
+h1,h2,p{margin:0}
+h1{font-size:27px}
+h2{font-size:20px;margin-bottom:9px}
+.center{text-align:center;padding:15px 0}
+.brick{width:180px;height:112px;background:linear-gradient(145deg,#ff5145,#c91c29);border:0;border-radius:15px;box-shadow:inset -8px -9px #981d28,inset 5px 5px #ff8979,0 10px #711521;cursor:pointer}
+.brick:active{transform:translateY(6px)}
+.studs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px}
+.studtop{height:27px;border-radius:8px;background:linear-gradient(145deg,#ff9c8e,#e22b37);box-shadow:inset -3px -3px #b51e2a}
+.shop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.upgrade{background:#f8fafc;color:#172033;border:1px solid #cbd5e1;border-radius:11px;padding:11px;display:flex;align-items:center;gap:9px;text-align:left;min-width:0;cursor:pointer}
+.upgrade:disabled{opacity:.45;cursor:not-allowed}
+.upgrade .details{flex:1;min-width:0}
+.small{font-size:12px;color:#64748b;margin-top:3px}
+.cost{font-size:12px;font-weight:bold;margin-top:5px}
+.burn{width:100%;border:0;border-radius:11px;padding:13px;background:linear-gradient(110deg,#b91c1c,#f97316);color:white;font-weight:900;font-size:16px;cursor:pointer}
+.burn:disabled{opacity:.4;cursor:not-allowed}
+.progress{height:12px;background:#0005;border-radius:20px;overflow:hidden;margin-top:8px}
+.bar{height:100%;background:#facc15;width:0%}
+.golden{display:none;position:fixed;z-index:1000;width:min(240px,70vw);padding:18px;border:2px solid #fff0a8;border-radius:14px;background:linear-gradient(135deg,#facc15,#d97706);color:#422006;font-size:19px;font-weight:900;cursor:pointer;box-shadow:0 0 22px #facc1570;animation:glow 1.1s infinite alternate;touch-action:manipulation}
+@keyframes glow{to{box-shadow:0 0 42px #facc15}}
+.gold-shop-note{font-size:13px;color:#fde68a;margin:6px 0 12px}.achievement{background:#0004;padding:10px;border-radius:10px;border:1px solid #ffffff20}.achievement.done{border-color:#facc15;background:#a1620725}.achievement .small{color:#cbd5e1}
+.note{text-align:center;font-size:12px;color:#dbeafe;margin-top:7px}
+.float{position:absolute;color:#facc15;font-weight:900;pointer-events:none;animation:rise .8s forwards}
+@keyframes rise{to{transform:translateY(-65px);opacity:0}}
+button:focus-visible{outline:3px solid #38bdf8;outline-offset:3px}
+@media(max-width:560px){body{padding:12px}.shop{grid-template-columns:1fr}h1{font-size:23px}}
+.tab-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;position:relative;top:auto;z-index:30;background:#101827ee;padding:9px;border:1px solid #34445e;border-radius:14px;backdrop-filter:blur(8px)}
+.tab-button{border:1px solid #4b6080;background:#23344f;color:#f8fafc;border-radius:10px;padding:12px 7px;font-size:13px;font-weight:800;cursor:pointer}
+.tab-button[aria-selected="true"]{background:#facc15;color:#172033;border-color:#facc15}
+.tab-page[hidden],.tab-button[hidden]{display:none!important}
+.tab-page{display:flex;flex-direction:column;gap:16px}
+@media(max-width:560px){.tab-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.tab-button{padding:10px 5px;font-size:12px}}
+
+/* Refined glass-and-layered design: more breathing room, softer surfaces */
+:root{color-scheme:dark;--accent:#f8ca57;--surface:rgba(23,35,55,.82)}
+body{background:radial-gradient(ellipse at 18% 0%,#243756 0%,transparent 43%),radial-gradient(ellipse at 90% 100%,#1b3150 0%,transparent 44%),#0b1220;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.01em;min-height:100vh}
+.game{max-width:1000px;gap:22px}
+.panel{background:linear-gradient(135deg,rgba(34,49,73,.86),rgba(16,26,43,.93));border:1px solid rgba(179,203,239,.11);box-shadow:0 18px 48px rgba(0,0,0,.18);border-radius:24px;padding:clamp(18px,3vw,30px)}
+.stat{background:rgba(10,20,36,.42);border:1px solid rgba(215,230,255,.07);border-radius:16px;padding:16px}
+.label{letter-spacing:.12em;text-transform:uppercase;font-size:10px;color:#a9bdd6}
+.num{font-size:clamp(21px,3vw,30px);color:#ffd873;letter-spacing:-.04em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.number-setting-info{color:#d9e6f6;font-size:12px;text-align:right;max-width:60%}
+h1{font-size:clamp(27px,4vw,38px);letter-spacing:-.05em}h2{font-size:22px;letter-spacing:-.025em;margin-bottom:14px}
+.tab-nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;border-radius:18px;padding:7px;top:auto;background:rgba(16,25,41,.88);border-color:rgba(255,255,255,.10);box-shadow:0 8px 32px #0005}
+.tab-button{background:transparent;border:1px solid transparent;border-radius:12px;font-weight:650;color:#b9c8dc;padding:12px 7px;transition:background .2s,transform .2s}
+.tab-button:hover{background:#ffffff12;transform:translateY(-1px)}.tab-button[aria-selected="true"]{background:linear-gradient(135deg,#ffdf87,#eebc48);border-color:transparent;color:#2b2414;box-shadow:0 3px 15px #ffca5233}
+.upgrade,.achievement,.skill-node{border:1px solid rgba(205,223,248,.12);background:rgba(245,249,255,.07);color:#eef4ff;border-radius:16px;padding:16px;transition:transform .16s,border-color .16s,background .16s}
+.upgrade:hover:not(:disabled),.skill-node:hover:not(:disabled){transform:translateY(-2px);border-color:#facc1570;background:rgba(245,249,255,.12)}
+.upgrade:disabled,.skill-node:disabled{opacity:.56}.small{color:#b7c8dd;line-height:1.5}.cost{color:#ffd873}
+.achievement{background:#ffffff06}.achievement.done{background:linear-gradient(135deg,#d7a63820,#ffffff08);border-color:#facc1566}
+.brick{transition:transform .12s,filter .15s;border-radius:19px;box-shadow:inset -8px -9px #981d28,inset 5px 5px #ff8979,0 11px 24px #0007}.brick:hover{filter:brightness(1.1);transform:translateY(-3px)}.brick:active{transform:translateY(5px)}
+.burn{border-radius:14px;padding:16px;box-shadow:0 7px 22px #f9731630}
+.progress{height:8px;background:#ffffff16}.bar{background:linear-gradient(90deg,#f59e0b,#fde68a);border-radius:20px}
+.golden{border-color:var(--rarity,#facc15);background:linear-gradient(145deg,#2a3449,#101b2b);color:var(--rarity,#facc15);box-shadow:0 0 24px var(--rarity,#facc15);border-radius:18px}
+@keyframes glow{to{box-shadow:0 0 45px var(--rarity,#facc15)}}
+.eyebrow{font-size:11px;letter-spacing:.2em;color:#e8c66b;font-weight:750;margin-bottom:8px}.muted{font-size:14px;line-height:1.6;color:#b6c8df;margin-bottom:18px}
+.inline-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.inline-stat strong{font-size:24px;color:#facc15}
+.skill-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.skill-node{display:flex;align-items:flex-start;gap:10px;text-align:left;cursor:pointer;min-height:126px}.skill-node .skill-icon{font-size:26px}.skill-node span:last-child{display:flex;flex-direction:column;gap:8px}.skill-node small{font-size:12px;color:#b6c8df;line-height:1.4}.skill-node em{font-size:11px;font-style:normal;color:#fcd56d}.skill-node.learned{border-color:#56c89b99;background:#56c89b17}
+.records-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.record{padding:16px;background:#ffffff08;border:1px solid #ffffff0e;border-radius:15px;display:flex;flex-direction:column;gap:9px}.record span{font-size:12px;color:#b6c8df}.record strong{font-size:20px;color:#ffe093;overflow-wrap:anywhere}
+.event-banner{margin-bottom:16px;padding:13px 16px;border-radius:14px;background:linear-gradient(110deg,#4d3487,#244c7d);border:1px solid #c5a6ff66;color:#f7eaff;font-weight:700;font-size:13px}.event-banner[hidden]{display:none}
+@media(max-width:650px){body{padding:10px}.tab-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.skill-grid,.records-grid{grid-template-columns:1fr}.stats{gap:8px}.panel{padding:17px}.shop{grid-template-columns:1fr}}
+
+/* Sleek interactive collectible, refined menus and precise click feedback */
+.brick{width:166px;height:166px;border-radius:50%;position:relative;overflow:visible;background:radial-gradient(circle at 30% 24%,#ffaaa0,#f44d53 38%,#aa142d 90%);box-shadow:inset 0 7px 12px #ffffff36,inset -12px -14px 20px #5e0b2d88,0 16px 40px #0008;display:grid;place-items:center;isolation:isolate;user-select:none;touch-action:manipulation}
+.brick .studs{display:none}.brick::before{content:"";width:60%;height:60%;border-radius:50%;border:4px solid #ffffff30;box-shadow:inset 0 5px 12px #ffffff22,inset 0 -8px 10px #0003;position:absolute}
+.brick::after{content:"S";font-weight:950;font-size:70px;color:#ffe1e0;text-shadow:0 3px 8px #67121d}
+.brick[data-shape="diamond"]{border-radius:23%;transform:rotate(45deg) scale(.82)}.brick[data-shape="diamond"]::after{transform:rotate(-45deg)}.brick[data-shape="diamond"]:active{transform:rotate(45deg) scale(.77)}
+.brick[data-shape="brick"]{border-radius:26px;width:176px;height:130px}.brick[data-shape="brick"]::after{content:""}.brick[data-shape="brick"] .studs{display:grid;width:100%;height:100%;align-content:center}
+.brick[data-shape="hex"]{clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);border-radius:0}
+.brick[data-skin="gold"]{background:radial-gradient(circle at 25% 20%,#fff5b4,#f6c63d 43%,#a66c10)}.brick[data-skin="gold"]::after{color:#fff7d5}
+.brick[data-skin="ocean"]{background:radial-gradient(circle at 25% 20%,#c9faff,#2ab8e5 43%,#1350a4)}
+.brick[data-skin="amethyst"]{background:radial-gradient(circle at 25% 20%,#f4caff,#a26ef7 43%,#4c1b99)}
+.brick[data-skin="diamond"]{background:radial-gradient(circle at 25% 20%,#fff,#b9edff 43%,#5c86c7)}.brick[data-skin="diamond"]::after{color:#ffffff}
+.brick[data-skin="galaxy"]{background:radial-gradient(circle at 25% 20%,#d4a7ff,#693cb5 43%,#101e57)}
+.brick[data-skin="rainbow"]{background:conic-gradient(#fc6d83,#fbd565,#6cddaa,#75baf9,#c58eff,#fc6d83)}
+.brick[data-skin="obsidian"]{background:radial-gradient(circle at 25% 20%,#7b8da8,#303f60 43%,#090e20)}
+.float{position:fixed;z-index:1200;white-space:nowrap;font-size:16px;animation:rise .85s ease-out forwards;text-shadow:0 2px 7px #000;transform:translate(-50%,-50%)}
+@keyframes rise{to{transform:translate(-50%,-105px);opacity:0}}
+body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{animation:none!important;transition:none!important}.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;color:#e1e9f5}.settings-row select,.settings-row input{accent-color:#e9c35d}.settings-row select{background:#253751;color:white;padding:8px;border:1px solid #64748b;border-radius:9px}
+.skin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.skin-tile{background:#ffffff0b;border:1px solid #ffffff24;border-radius:15px;padding:14px;color:white;cursor:pointer;text-align:left}.skin-tile.active{border-color:#facc15;background:#facc151c}.skin-tile:disabled{opacity:.45;cursor:not-allowed}.skin-tile b{display:block;margin-bottom:6px}.skin-tile small{color:#c5d1e2}.skin-unlock-reason{display:block;margin-top:9px;color:#aebed1;font-size:11px;line-height:1.5}
+.rainbow{display:none;position:fixed;z-index:1100;border:2px solid #ffffffa6;border-radius:22px;padding:18px 24px;font-size:18px;font-weight:900;color:#172033;background:linear-gradient(110deg,#ff8aa5,#f9e17c,#88f4cc,#99b9ff,#d6a4ff);box-shadow:0 0 40px #b388ffbb;cursor:pointer;animation:glow 1.1s infinite alternate}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.danger-zone{margin-top:22px;padding:18px;border:1px solid #f8717155;border-radius:16px;background:linear-gradient(145deg,#7f1d1d22,#1e293b55)}.reset-choice{padding:12px 0}.reset-choice+.reset-choice{margin-top:14px;padding-top:18px;border-top:1px solid #fb718542}.reset-choice b{display:block;margin-bottom:7px;color:#f1f5f9}.reset-choice p{margin:0;color:#b9c9dc;font-size:13px;line-height:1.55}.full-wipe{width:100%;padding:14px 18px;border-radius:13px;border:1px solid #fb7185;background:#611827;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-top:11px;transition:background .16s ease}.full-wipe:hover{background:#84223a}.full-wipe:focus-visible{outline:3px solid #fca5a5;outline-offset:3px}.danger-zone h3{color:#fca5a5;margin:0 0 8px}.danger-zone .burn{margin-top:12px}.note code{overflow-wrap:anywhere;word-break:break-word}
+
+.offline-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.offline-node{background:linear-gradient(140deg,#1a3047,#223d53);border:1px solid #4e7185;border-radius:17px;padding:16px;color:#eef7ff;text-align:left;cursor:pointer}
+.offline-node:disabled{opacity:.52;cursor:not-allowed}.offline-node.learned{border-color:#58c5a7;background:linear-gradient(140deg,#174a48,#213d51)}
+.offline-node b,.offline-node small{display:block;margin:5px 0}.offline-node small{color:#c1d2df}
+.offline-overlay{position:fixed;inset:0;z-index:2100;background:#061321bb;display:flex;align-items:center;justify-content:center;padding:20px}
+.offline-overlay[hidden]{display:none!important}.offline-dialog{max-width:480px;width:100%;background:linear-gradient(145deg,#233e55,#111e32);border:1px solid #88b8cc;border-radius:24px;padding:30px;text-align:center;box-shadow:0 30px 90px #0008}
+.offline-dialog h2{margin:8px 0}.offline-dialog .num{color:#f9d878;font-size:32px;font-weight:900}.offline-dialog button{margin-top:18px;padding:12px 24px;border:0;border-radius:12px;background:#f4cc65;color:#1c2733;font-weight:800;cursor:pointer}
+.news-entry{padding:15px 0;border-bottom:1px solid #ffffff22}.news-entry:last-child{border-bottom:0}.news-entry b{color:#f8d77e}
+
+/* Secret collectible bricks are intentionally small and unobtrusive. */
+.tab-page{position:relative}
+.secret-brick{position:absolute;z-index:5;width:17px;height:14px;padding:0;border:1px solid #ffffff30;border-radius:3px;background:linear-gradient(145deg,#b7783a,#6e4b32);box-shadow:inset 0 2px #ffffff28,0 2px 4px #0004;cursor:pointer;opacity:.42;transition:opacity .2s,transform .2s}
+.secret-brick:before{content:"";position:absolute;width:7px;height:3px;left:4px;top:-4px;border-radius:2px 2px 0 0;background:#b7783a}
+.secret-brick:hover,.secret-brick:focus-visible{opacity:1;transform:scale(1.35)}
+.secret-brick.found{display:none}
+.secret-counter{font-size:12px;color:#b7c5d8;margin:12px 0}
+.secret-scroll-tunnel{margin-top:24px;border:1px solid #ffffff13;border-radius:16px;padding:14px;background:#0a162520}
+.secret-scroll-track{height:16000px;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 780px,#ffffff08 781px,#ffffff08 782px);}
+.secret-scroll-track:before{content:"The secret is further down...";position:absolute;top:100px;left:12px;font-size:12px;color:#7d8ca4}
+.secret-scroll-track:after{content:"Almost there.";position:absolute;bottom:140px;left:12px;font-size:12px;color:#7d8ca4}
+.secret-scroll-finish{position:relative;min-height:72px;padding:14px;color:#899bb1;font-size:12px}
+.secret-scroll-finish .secret-brick{left:calc(50% - 8px);top:38px;opacity:.75}
+
+.achievement-controls{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}.achievement-controls label{font-size:12px;color:#cbd5e1;display:flex;flex-direction:column;gap:5px}.achievement-controls select{background:#17243c;color:#f8fafc;border:1px solid #64748b70;border-radius:10px;padding:9px;max-width:200px}
+.achievement-meta{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}.ach-tag{font-size:11px;font-weight:700;letter-spacing:.025em;border-radius:20px;padding:3px 9px;background:#64748b40;color:#e2e8f0}.rarity-common{color:#cbd5e1;border-color:#94a3b850!important}.rarity-uncommon{color:#86efac;border-color:#4ade8055!important}.rarity-rare{color:#93c5fd;border-color:#60a5fa70!important}.rarity-epic{color:#d8b4fe;border-color:#c084fc80!important}.rarity-legendary{color:#fcd34d;border-color:#f59e0b90!important}.rarity-mythic{color:#f9a8d4;border-color:#f472b6aa!important}
+.achievement-toast-stack{position:fixed;right:18px;bottom:18px;top:auto;z-index:9999;display:grid;gap:10px;pointer-events:none;width:min(350px,calc(100vw - 36px))}.achievement-toast{background:linear-gradient(125deg,#17243bf5,#101827f7);border:1px solid #d6b15480;box-shadow:0 14px 40px #0009;border-radius:16px;padding:15px;animation:ach-in .28s ease-out;pointer-events:auto;cursor:pointer}.achievement-toast strong{display:block;font-size:15px;color:#fff}.achievement-toast p{margin:6px 0;color:#dbe4f1;font-size:12px}.achievement-toast .small{font-size:11px;color:#e6c974}.achievement-toast.fade{opacity:0;transform:translateX(20px);transition:all .3s}@keyframes ach-in{from{opacity:0;transform:translateX(35px)}to{opacity:1;transform:translateX(0)}}
+
+/* Non-sticky, compact navigation and grouped upgrade pages */
+.tab-nav{position:relative!important;top:auto!important;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));align-items:start;overflow:visible}
+.nav-group{position:relative;min-width:0;z-index:40}
+.nav-group summary{list-style:none;cursor:pointer;text-align:center;border:1px solid #ffffff2b;border-radius:12px;padding:11px 6px;background:#263852;color:#eaf2ff;font-size:13px;font-weight:700}
+.nav-group summary::-webkit-details-marker{display:none}.nav-group[open] summary{border-color:#e5bb65}
+.nav-submenu{position:absolute;top:calc(100% + 6px);left:0;min-width:190px;width:max-content;max-width:min(280px,90vw);padding:7px;display:grid;gap:5px;background:#142338;border:1px solid #61758c;border-radius:13px;box-shadow:0 18px 35px #000a;z-index:50}
+.nav-submenu .tab-button{width:100%;text-align:left;padding:11px 13px}
+@media(max-width:650px){.tab-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-submenu{left:auto;right:0}}
+/* Slim achievement list with restrained metadata */
+#achievements.shop{display:grid;grid-template-columns:1fr;gap:5px}
+#achievements .achievement{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 12px;padding:11px 14px;border-radius:9px;background:#ffffff06;border:1px solid #ffffff13;box-shadow:none;min-height:0}
+#achievements .achievement b{font-size:13px;font-weight:650;grid-column:1;line-height:1.35}
+#achievements .achievement .achievement-meta{grid-column:2;grid-row:1 / span 2;justify-content:flex-end;align-items:center;margin:0;gap:4px}
+#achievements .achievement .small{grid-column:1;font-size:11px;line-height:1.35;margin:0;color:#a8b7ca}
+#achievements .achievement .small:last-child{display:none}
+#achievements .achievement .ach-tag{padding:2px 6px;font-size:10px;border-radius:5px;background:#ffffff0a}
+#achievements .achievement.done{border-left:3px solid #e9bf69}
+.achievement-controls{gap:8px}.achievement-controls label{flex:1;min-width:120px}.achievement-controls select{width:100%;max-width:none}
+@media(max-width:570px){#achievements .achievement{grid-template-columns:1fr}#achievements .achievement .achievement-meta{grid-column:1;grid-row:auto;justify-content:flex-start}}
+/* Blended, varied secret marks instead of obvious brown brick buttons */
+.secret-brick{width:10px;height:9px;border:0;border-radius:2px;opacity:.18;background:#98b2c9;box-shadow:none;transform:rotate(-7deg);transition:opacity .2s,transform .2s}
+.secret-brick:before{display:none}.secret-brick:hover,.secret-brick:focus-visible{opacity:.9;transform:scale(1.6)}
+.secret-brick[data-disguise="dot"]{width:7px;height:7px;border-radius:50%;background:#d4b877}
+.secret-brick[data-disguise="dash"]{width:14px;height:3px;border-radius:4px;background:#b4c6dd}
+.secret-brick[data-disguise="chip"]{width:10px;height:9px;background:#637d9a;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.secret-brick[data-disguise="glint"]{width:9px;height:9px;background:#e3ca91;clip-path:polygon(50% 0,62% 37%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 37%)}
+.secret-scroll-finish .secret-brick{opacity:.25}
+.misprint-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:10px 12px;border:1px solid #ffffff12;background:#17273a;border-radius:11px;color:#8497af;font-size:11px}
+.misprint-trigger{width:24px;height:24px;background:linear-gradient(145deg,#344b60 0 47%,#3d5367 48%);border:1px solid #465b70;border-radius:5px;cursor:pointer}
+.misprint-trigger:hover{border-color:#e2c481}
+.secret-minigame{margin-top:12px;border:1px solid #667f99;border-radius:14px;padding:16px;background:#15283d}
+.secret-minigame[hidden]{display:none}.mini-head{display:flex;align-items:center;justify-content:space-between}.mini-head button{border:1px solid #607890;background:#223a50;color:white;padding:6px 12px;border-radius:8px;cursor:pointer}
+.mini-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:350px;margin:14px 0}.mini-tiles button{aspect-ratio:1;border:1px solid #ffffff18;border-radius:6px;cursor:pointer;background:#405a73}.mini-tiles button:focus-visible{outline:2px solid #f7dc95}
+/* Secret marks blend into the surrounding panels and require investigation. */
+.secret-brick{opacity:.07!important;filter:saturate(.35);width:6px!important;height:5px!important;box-shadow:none!important}
+.secret-brick:hover,.secret-brick:focus-visible{opacity:.5!important}
+.secret-brick[data-disguise="dash"]{width:9px!important;height:2px!important}
+.secret-brick[data-disguise="chip"]{width:7px!important;height:6px!important}
+.secret-brick[data-disguise="glint"]{width:6px!important;height:6px!important}
+.secret-brick.found{display:none!important}
+.puzzle-overlay[hidden]{display:none!important}
+.puzzle-overlay{position:fixed;inset:0;background:#050a13d9;z-index:2000;display:flex;align-items:center;justify-content:center;padding:18px}
+.puzzle-box{width:min(490px,100%);background:#15263c;border:1px solid #526b86;border-radius:20px;padding:22px;box-shadow:0 25px 70px #0009}
+.puzzle-head{display:flex;justify-content:space-between;gap:15px;align-items:center}
+.puzzle-head button,.puzzle-actions button{border:1px solid #657b95;border-radius:9px;background:#273f58;color:white;padding:10px 14px;cursor:pointer}
+.puzzle-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}
+.puzzle-actions button{min-height:54px;font-size:20px}
+.puzzle-actions button:disabled{opacity:.45}
+.puzzle-meter{margin-top:12px;color:#c4d8ed;font-size:13px}
+
+/* A disguised, five-stage corner puzzle: always just a subtle tile variation. */
+#page-play{position:relative;min-height:520px}
+.corner-trail{position:absolute;z-index:6;width:13px;height:13px;padding:0;border:0;border-radius:3px;background:#8c9bad;opacity:.26;box-shadow:inset 1px 1px 0 #ffffff14;cursor:pointer}
+.corner-trail:hover,.corner-trail:focus-visible{opacity:.65;outline:1px dotted #b8c6d9}
+.corner-trail[hidden]{display:none!important}
+
+/* Mastery studio and streamlined visual language */
+:root{--surface:#162438;--hairline:#ffffff18;--accent:#e6c575}
+body{background:radial-gradient(ellipse at 50% -10%,#253a53 0%,#0e1828 58%,#0b1320 100%);color:#ecf2fa}
+.panel{border:1px solid var(--hairline);border-radius:20px;box-shadow:0 12px 32px #050a1230;background:linear-gradient(145deg,#1a2b40,#132135)}
+.tab-button,.upgrade,.skin-tile,.offline-node,.skill-node{transition:background .16s ease,border-color .16s ease,transform .16s ease;box-shadow:none!important}
+.tab-button:hover:not(:disabled),.upgrade:hover:not(:disabled),.skin-tile:hover:not(:disabled){transform:translateY(-1px)}
+.tab-nav{gap:7px}.tab-nav .tab-button{border-radius:11px}
+.stats .stat{border-radius:14px}.stat .num{font-variant-numeric:tabular-nums}
+.mastery-section{margin:18px 0 24px;padding:19px;border:1px solid var(--hairline);border-radius:18px;background:#ffffff05}
+.mastery-section h3{font-size:15px;margin:17px 0 9px}.mastery-section h3:first-child{margin-top:0}
+.mastery-track,.mini-track{height:7px;background:#ffffff15;border-radius:20px;overflow:hidden}
+.mastery-track>div{height:100%;background:linear-gradient(90deg,#b28bde,#f0cb78);border-radius:20px;transition:width .25s}
+.mastery-skins{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin:14px 0 20px}
+.mastery-chip,.burn-challenge{padding:11px 12px;border:1px solid #ffffff17;border-radius:11px;background:#ffffff04;display:flex;flex-direction:column;gap:5px;opacity:.65}
+.mastery-chip.earned,.burn-challenge.earned{opacity:1;border-color:#e6c57575;background:#e6c5750e}
+.mastery-chip span{color:#e8c77b}.mastery-chip b,.burn-challenge b{font-size:12px}.mastery-chip small,.burn-challenge small{font-size:11px;color:#b8c8db;line-height:1.45}
+.rarity-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:20px}
+.rarity-meter{padding:10px;border:1px solid #ffffff18;border-radius:10px;background:#ffffff06;display:grid;grid-template-columns:1fr auto;gap:8px;font-size:12px}
+.rarity-meter .mini-track{grid-column:1/-1;height:5px}.rarity-meter .mini-track>div{height:100%;background:currentColor;border-radius:10px}
+.burn-challenges{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.effect-choices{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}.effect-choices button{padding:9px 13px;border:1px solid #ffffff2a;border-radius:10px;background:#ffffff08;color:#e7effa;cursor:pointer}.effect-choices button.active{border-color:#e6c575;background:#e6c57522}
+.brick[data-skin^="mastery_"]{background:radial-gradient(circle at 26% 19%,var(--skin-light),var(--skin-mid) 48%,var(--skin-dark) 95%)}
+.brick[data-skin^="burn_"]{background:radial-gradient(circle at 25% 18%,#fff4b8,#e77d46 44%,#6b203b 95%);box-shadow:0 0 22px #e9865d60,inset -8px -9px 16px #32102688}
+.brick[data-skin="burn_cinder"]{filter:hue-rotate(35deg)}.brick[data-skin="burn_ashen"]{filter:grayscale(.65)}.brick[data-skin="burn_inferno"]{filter:hue-rotate(-35deg)}.brick[data-skin="burn_reborn"]{filter:hue-rotate(170deg)}
+.click-particle{position:fixed;z-index:1250;pointer-events:none;font-weight:900;color:#f5d47e;animation:click-particle .65s ease-out forwards}
+@keyframes click-particle{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+@media(max-width:600px){.panel{padding:15px}.mastery-section{padding:12px}.mastery-skins{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Gentle appearance and disappearance; the original glow stays on the brick itself. */
+.golden.brick-appearing,.rainbow.brick-appearing{animation:brickArrive .7s ease-out both}
+.golden.brick-fading,.rainbow.brick-fading{animation:brickLeave 1.2s ease-in forwards!important;pointer-events:auto}
+@keyframes brickArrive{from{opacity:0;transform:translateY(12px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes brickLeave{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-8px) scale(.9)}}
+body.reduce-motion .golden.brick-appearing,body.reduce-motion .rainbow.brick-appearing,body.reduce-motion .golden.brick-fading,body.reduce-motion .rainbow.brick-fading{animation:none!important}
+.game-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.version-tag{display:inline-flex;align-items:center;border:1px solid #facc1555;background:#facc1515;color:#ffe08b;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.update-subtitle{font-size:12px;color:#e9bf6c;letter-spacing:.09em;font-weight:650;margin-top:3px}
+
+.catalog-switch{display:flex;gap:9px;margin:14px 0 17px;flex-wrap:wrap}.catalog-button{padding:11px 18px;background:#21364b;color:#e6efff;border:1px solid #42566d;border-radius:12px;cursor:pointer;font-weight:700}.catalog-button.active{background:#3c4268;border-color:#d8bc83;color:#fff}.hat-icon{display:block;font-size:29px;margin-bottom:8px}.stud-hat{position:absolute;z-index:10;top:-49px;left:50%;transform:translateX(-50%);font-size:57px;line-height:1;pointer-events:none;filter:drop-shadow(0 4px 3px #0007)}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="game">
+<nav class="tab-nav" aria-label="Game pages">
+<button class="tab-button" type="button" data-page="play" aria-selected="true">Sitting Stud</button>
+<button class="tab-button" type="button" data-page="normal" aria-selected="false">LEGO Shop</button>
+<button class="tab-button" type="button" data-page="ascension" aria-selected="false">Ascension</button>
+<button class="tab-button" type="button" data-page="permanent" aria-selected="false">Ascension Shop</button>
+<button class="tab-button" type="button" data-page="gold" aria-selected="false">Golden Shards</button>
+<button class="tab-button" type="button" data-page="skins" aria-selected="false">Stud Specials</button>
+<details class="nav-group" id="upgradeMenu"><summary>More Upgrades <span aria-hidden="true">⌄</span></summary><div class="nav-submenu">
+<button class="tab-button" type="button" data-page="skills" aria-selected="false">Skill Tree</button>
+<button class="tab-button" type="button" data-page="research" aria-selected="false">Research Lab</button>
+<button class="tab-button" type="button" data-page="rainbow" aria-selected="false" id="rainbowTab">Rainbows Rave</button>
+<button class="tab-button" type="button" data-page="offline" aria-selected="false">Offline Lab</button>
+</div></details>
+<button class="tab-button" type="button" data-page="achievements" aria-selected="false">Achievements</button>
+<button class="tab-button" type="button" data-page="records" aria-selected="false">Records</button>
+<button class="tab-button" type="button" data-page="news" aria-selected="false">News</button>
+<button class="tab-button" type="button" data-page="settings" aria-selected="false">Settings</button>
+</nav>
+<div class="tab-page" id="page-play">
+
+<section class="panel">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+<div class="game-title"><div><h1>STUD CLICKER</h1><div class="update-subtitle">The Great Rebalance</div></div><span class="version-tag" title="The Great Rebalance">v1.46</span></div>
+
+</div>
+
+<div class="stats">
+<div class="stat"><div class="label">STUDS</div><div class="num" id="money">0</div></div>
+<div class="stat"><div class="label">STUDS / SECOND</div><div class="num" id="sps">0</div></div>
+<div class="stat"><div class="label">ASCENSION POINTS</div><div class="num" id="ap">0</div></div>
+<div class="stat"><div class="label">MULTIPLIER</div><div class="num" id="mult">1.00x</div></div>
+</div>
+<div class="center">
+<p style="margin-bottom:18px">Click the Sitting Stud to collect studs!</p>
+<div style="position:relative;display:inline-block">
+<button class="brick" id="brick" aria-label="Collect LEGO studs">
+<div class="studs">
+<i class="studtop"></i><i class="studtop"></i>
+<i class="studtop"></i><i class="studtop"></i>
+<i class="studtop"></i><i class="studtop"></i>
+<i class="studtop"></i><i class="studtop"></i>
+</div>
+</button>
+<div id="studHat" class="stud-hat" aria-hidden="true"></div><div id="floats" style="position:absolute;inset:0;pointer-events:none"></div>
+</div>
+<p id="power" style="margin-top:17px;font-weight:bold">+1 per click</p>
+<p id="comboStatus" class="muted" style="margin:7px 0 0">Click combo: 1.00×</p>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px">
+<span>Progress to next ascension</span><b id="progressText">0 / 10,000</b>
+</div>
+<div class="progress"><div class="bar" id="progress"></div></div>
+</section>
+
+
+<button class="golden" id="golden" aria-label="Claim the surprise Golden LEGO Brick">GOLDEN LEGO BRICK!</button>
+<button class="rainbow" id="rainbowBrick" aria-label="Claim the rare Rainbow LEGO Brick">RAINBOW LEGO BRICK!</button>
+
+</div>
+<div class="tab-page" id="page-gold" hidden>
+<section class="panel">
+<h2>🌟 Golden Brick Upgrade Shop</h2>
+<p class="gold-shop-note">Collect Golden LEGO Bricks to earn <b>Golden Shards</b>. Each brick gives 1 shard (or more with upgrades). Golden Bricks can award Frenzy, Stud Payout, Click Storm, or Factory Overdrive. Golden upgrades are permanent and do not spend Ascension Points.</p>
+<div class="stat" style="margin-bottom:10px"><div class="label">GOLDEN SHARDS</div><div class="num" id="goldShards">0</div></div>
+<div class="shop" id="goldShop"></div>
+</section>
+
+</div>
+<div class="tab-page" id="page-ascension" hidden>
+<section class="panel">
+<h2>🔥 LEGO ASCENSION</h2>
+<p style="font-size:14px;margin-bottom:12px">Earn ascensions from lifetime studs across your runs. Milestone prices keep their existing increasing growth rate, and progress rolls into the next milestone. <b>Ready ascensions do not boost production until you claim them.</b> Each claimed ascension adds +1× to your ascension bonus, starting at 1×; spending points never lowers it.</p><div class="note" style="margin:0 0 12px;text-align:left">Claimed ascension bonus: <b id="ascensionBonus">1.00×</b> · Ready ascensions are not included.</div>
+<div class="two" style="text-align:center;margin-bottom:10px">
+<div class="stat"><div class="label" id="nextMultLabel">TOTAL MULTIPLIER AFTER NEXT ASCENSION</div><div class="num" id="nextMult">2.00×</div></div>
+<div class="stat"><div class="label">NEXT ASCENSION COST</div><div class="num" id="nextPrice">10K</div></div>
+</div>
+<button class="burn" id="burn" disabled>🔥 BURN LEGO</button>
+<div class="note" id="available">0 ascensions available</div>
+<div class="note" id="burnMessage">Earn 10,000 lifetime studs to unlock your first ascension.</div>
+<div class="note">Ascensions accumulate automatically as you earn studs. Claiming resets your current run and grants 1 Ascension Point per ready ascension.</div>
+</section>
+
+</div>
+<div class="tab-page" id="page-normal" hidden>
+<section class="panel">
+<h2>🛒 Normal LEGO Shop</h2><p style="font-size:13px;color:#cbd5e1;margin:-4px 0 10px">The first two upgrades are always visible. Buy each upgrade once to reveal the next one.</p>
+<div class="shop" id="shop"></div>
+</section>
+
+</div>
+<div class="tab-page" id="page-permanent" hidden>
+<section class="panel">
+<h2>⭐ PERMANENT UPGRADES</h2>
+<p style="font-size:14px;margin-bottom:10px">Buy these with ascension points. They never disappear when you ascend. Each upgrade unlocks the next branch of the tree.</p>
+<div class="note" id="specialStatus">Unlocks after your first ascension.</div>
+<div class="shop" id="specialShop" style="margin-top:10px"></div>
+</section>
+
+</div>
+<div class="tab-page" id="page-skills" hidden>
+<section class="panel"><div class="eyebrow">ASCENSION MASTERY</div><h2>🌳 Ascension Skill Tree</h2><p class="muted">Earn 1 Skill Point every 3 ascensions. Choose a path; skills are permanent and never spend your Ascension Points.</p><div class="stat inline-stat">Available Skill Points <strong id="skillPoints">0</strong></div><div class="skill-grid" id="skillTree"></div></section></div>
+<div class="tab-page" id="page-records" hidden><section class="panel"><div class="eyebrow">YOUR LEGO EMPIRE</div><h2>📊 Statistics & Records</h2><div id="records" class="records-grid"></div></section></div>
+<div class="tab-page" id="page-achievements" hidden>
+<section class="panel"><h2>Achievements <span id="achievementCount" style="font-size:13px;color:#facc15"></span></h2><p class="muted">Achievements award rarity points (Common 1, Uncommon 2, Rare 3, Epic 5, Legendary 8, Mythic 12). Every 10 points grants a permanent +2% multiplier. Rewards stack with ascensions and survive resets.</p><div class="stat inline-stat">Achievement bonus <strong id="achievementBonus">1.00×</strong></div><p class="muted" id="achievementProgress">0 rarity points · 10 points per +2% bonus</p><div class="achievement-controls"><label>Category <select id="achievementCategory"><option value="all">All categories</option></select></label><label>Rarity <select id="achievementRarity"><option value="all">All rarities</option></select></label><label>Show <select id="achievementStatus"><option value="all">All</option><option value="locked">Locked</option><option value="unlocked">Unlocked</option></select></label></div><div class="mastery-section"><h3>Achievement Mastery</h3><p class="muted" id="masterySummary"></p><div class="mastery-track"><div id="masteryFill"></div></div><p class="muted" id="masteryNext"></p><div class="mastery-skins" id="masterySkins"></div><h3>Rarity collection</h3><div class="rarity-breakdown" id="rarityBreakdown"></div><h3>Burnt LEGO Challenges · 5 legendary skins</h3><p class="muted">Complete extreme multi-system feats, then use Burn All Studs to claim ONE exclusive skin per burn. Other challenge progress resets, even if multiple are ready. These are deliberately harder than ordinary achievements. Achievements, lifetime records and unlocked skins are preserved.</p><div class="burn-challenges" id="burnChallenges"></div></div><div class="secret-counter" id="secretCounter">Secret bricks: 0 / 50</div><p class="muted" style="font-size:12px">Collection bonus: +1% all production for every 5 hidden bricks, up to +10%.</p><div id="achievements" class="shop"></div></section>
+
+
+
+
+<p id="message" style="text-align:center;font-size:13px;color:#cbd5e1">Build your LEGO empire!</p>
+</div>
+<div class="tab-page" id="page-research" hidden><section class="panel"><div class="eyebrow">PRODUCTION SCIENCE</div><h2>Research Laboratory</h2><p class="muted">Research upgrades cost studs and remain unlocked after ascension.</p><div class="shop" id="researchShop"></div></section></div>
+<div class="tab-page" id="page-skins" hidden><section class="panel"><div class="eyebrow">CUSTOMISE YOUR STUD</div><h2>Stud Specials</h2><p class="muted">Choose your favourite shape and colour. Rare skins unlock through gameplay, not purchases.</p><div class="catalog-switch"><button class="catalog-button active" data-catalog="studs">Stud Skins</button><button class="catalog-button" data-catalog="hats">Hats & Cosmetics</button></div><div id="skinCatalog"><div id="skinShop" class="skin-grid"></div></div><div id="hatCatalog" hidden><p class="muted">Hats are bought with studs, permanently owned, and can be worn with any skin.</p><div class="stat inline-stat">Equipped hat <strong id="equippedHatName">None</strong></div><div id="hatShop" class="skin-grid"></div></div><h3>Visual effects</h3><p class="muted">Choose the click effect that suits your stud.</p><div class="effect-choices" id="effectChoices"><button type="button" data-effect="sparkle">✦ Sparkle</button><button type="button" data-effect="burst">◉ Burst</button><button type="button" data-effect="minimal">· Minimal</button><button type="button" data-effect="off">Off</button></div></section></div>
+<div class="tab-page" id="page-rainbow" hidden><section class="panel"><div class="eyebrow">SECRET COLLECTION</div><h2>Rainbows Rave</h2><p class="muted">Improve your Rainbow Brick odds using studs, and spend rare Rainbow Shards on permanent upgrades.</p><div class="stat inline-stat">Rainbow Shards <strong id="rainbowShards">0</strong></div><div class="shop" id="rainbowLuckShop"></div><h3>Prismatic Research</h3><div id="rainbowShop" class="shop"></div></section></div>
+<div class="tab-page" id="page-offline" hidden><section class="panel"><div class="eyebrow">IDLE PRODUCTION</div><h2>Offline Research & Upgrade Tree</h2><p class="muted">Earn studs while the game is closed for at least one minute. Offline earnings are always below your regular studs/second rate. Upgrades increase efficiency or maximum time, but never reach 100% production.</p><div class="stats"><div class="stat"><div class="label">OFFLINE RATE</div><div class="num" id="offlineRate">10%</div></div><div class="stat"><div class="label">MAX OFFLINE TIME</div><div class="num" id="offlineCap">2 hours</div></div></div><div class="offline-grid" id="offlineTree"></div></section></div>
+<div class="tab-page" id="page-news" hidden><section class="panel"><div class="eyebrow">GAME UPDATES</div><h2>News & Update Log</h2><div class="news-entry"><b>v1.46 — The Great Rebalance</b><p>Increased normal shop prices across all tiers, with the biggest changes for cosmic and beyond-vigintillion upgrades. Repeat purchases now scale by 1.85× instead of 1.55×, making new tiers meaningful long-term goals rather than instant purchases. Existing saves and upgrade ownership remain intact.</p></div><div class="news-entry"><b>v1.45 — Beyond Vigintillion</b><p>Expanded compact number names through centillion (Ce), uncentillion (UCe), and the maximum JavaScript number range. Added 40 new lifetime wealth achievements and 17 extreme late-game production upgrades to reach those milestones. No scientific notation in displayed numbers. The +1× per claimed ascension system stays unchanged.</p></div><div class="news-entry"><b>v1.44 — Compact Numbers & Claimed Ascensions</b><p>All quantities use compact K, M, B and T abbreviations without scientific notation. Beyond one trillion, totals keep stacking in T. Ascensions now award an additive +1× bonus only after being claimed; unclaimed milestones do not increase production.</p></div><div class="news-entry"><b>v1.43 — The Reset Rescue Update</b><p>Burn All Studs and save imports now survive page reloads without being overwritten by the save-on-exit handler. Added a separate Full Wipe button that deletes all game progress, permanent unlocks, challenge rewards, saved backups, and records after a typed confirmation.</p></div><div class="news-entry"><b>v1.42 — Rainbow Rave & Cosmic Couture</b><p>Rainbow Bricks give exactly one shard and trigger one of four immense temporary powers. Rainbow Luck moved to Rainbows Rave with ten very expensive stud-cost levels. Stud Specials now includes a permanent hat catalogue with a top hat. Expanded endgame production, vigintillion lifetime achievements, and retired obsolete special-event achievements.</p></div><div class="news-entry"><b>v1.40 — The Rare Brick Update</b><p>Random events removed. Bricks spawn every 1–5 minutes. Rainbow chance is 1 in 10,000, upgradeable to 1 in 2,000 through ten expensive Golden Shard upgrades. Rainbow Bricks originally awarded 15 shards (changed to 1 in v1.42). Golden Bricks can call a 1-in-500 reinforcement after collection. Ashen Crown now needs 10 Rainbow Bricks; Inferno Prism needs two of every Golden rarity and two Rainbow Bricks in a single Burn cycle. New achievements added.</p></div><div class="news-entry"><b>v1.39 — Ascension Price Scaling Rebalance</b><p>Each ascension milestone now increases the next price by a growing multiplier: 1.25× initially, plus 0.10× for each additional ascension.</p></div><div class="news-entry"><b>Achievement Name Refresh</b><p>Numbered achievement sequels now have unique, theme-matched names. Existing unlocks and progress are unchanged.</p></div><div class="news-entry"><b>Ascension Progress & Achievement Popups</b><p>Ascensions now use cumulative studs earned across runs, with a rolling milestone bar and +N ready indicator. Achievement popups have been refreshed and can be dismissed.</p></div><div class="news-entry"><b>Stud Skin Gallery Update</b><p>Stud Skins now has its own navigation button. Every skin shows its unlock requirements, including Complete Burning for challenge skins.</p></div><div class="news-entry"><b>One Burn, One Legend</b><p>Burnt LEGO Challenges now award only one skin per Burn All Studs. If several are ready, choose one in a selection menu; all unchosen challenge progress resets for the next cycle.</p></div><div class="news-entry"><b>Golden Brick Timing & Perfect Storm</b><p>Golden and Rainbow Brick appearances now occur every 1–15 minutes, with the next countdown beginning at spawn. New Golden Shard upgrades extend timed effects and brick visibility. Bricks fade in and out. Cinder Core now needs two overlapping timed effects at a 5.00× combo.</p></div><div class="news-entry"><b>Extreme Burnt LEGO Trials</b><p>Five new multi-system feats: a no-click research empire, a perfect four-way storm, the complete secret archive, triple prismatic eclipses, and the impossible upgrade blueprint. Earn exclusive permanent skins when burning.</p></div><div class="news-entry"><b>Burnt LEGO Challenges & Legacy Preservation</b><p>Five extreme challenge goals; Burn All Studs now preserves unlocked achievements, lifetime statistics and collected skins while resetting active progression.</p></div><div class="news-entry"><b>Achievement Mastery & Interface Refresh</b><p>Ten achievement milestone skins, five permanent Burn Challenge skins, a live rarity breakdown, selectable click effects and a cleaner responsive interface.</p></div><div class="news-entry"><b>500 Achievements — Unique Names</b><p>50 new individually named achievements for stud milestones, combos, Golden and Rainbow Bricks, secrets, research, ascensions and offline earnings.</p></div><div class="news-entry"><b>Secret Hunt: Moving Marks & Corner Trail</b><p>Randomised hidden-brick placements after a full reset, fixed-location secrets, a five-corner Sitting Stud tile puzzle, and +1% production for every five hidden bricks collected.</p></div><div class="news-entry"><b>Previous Achievement Expansion — 450 Total</b><p>150 new achievements across 15 progression series, including combo mastery, single-run challenges, secret brick discoveries, Rainbow Bricks, offline earnings, ascensions and crossover objectives. New achievements award rarity-weighted bonus points.</p></div><div class="news-entry"><b>Combo Rebalance</b><p>Click combos now increase by 0.005× every five clicks, up to 5.00×. The combo resets after two seconds without clicking. Combo mastery achievements now require the new maximum.</p></div><div class="news-entry"><b>Ascension Batches & Secret Challenges</b><p>Ascensions now stack and award one point per affordable tier. Twelve secret bricks require puzzles or timed challenges. Less cluttered help text and harder-to-see hidden marks.</p></div><div class="news-entry"><b>Earlier Full Reset Update</b><p>Earlier versions used Burn All Studs as a total wipe. Current versions use Burn All Studs for a progress reset; use Full Wipe Everything in Settings if you want a completely fresh start.</p></div><div class="news-entry"><b>Hidden Hunt & Interface Refresh</b><p>Harder-to-spot secret marks, a disguised colour puzzle, non-sticky navigation, grouped upgrade pages and a compact achievement list.</p></div><div class="news-entry"><b>Achievement Rarities & Super Stud</b><p>Side-screen unlock notifications, category and rarity filters, 50 Super Stud challenges, and weighted rarity points toward permanent achievement bonuses.</p></div><div class="news-entry"><b>300 Achievements Milestone</b><p>Five new crossover challenges: Secret Scientist, Prismatic Collector, Night Engineer, Rhythm Explorer and Ultimate Brick Collector.</p></div><div class="news-entry"><b>Secret Brick Hunt & Achievement Expansion</b><p>155 new achievements (300 total), including special challenges and 50 unique hidden bricks across the game. The deepest brick is at the bottom of Settings. Hidden brick discoveries are also erased by Burn All Studs.</p></div><div class="news-entry"><b>Offline & News Update</b><p>Offline earnings, an upgrade tree, a welcome-back reward popup, a News tab, and clearer single-run achievements.</p></div><div class="news-entry"><b>Research & Rainbow Update</b><p>Research Laboratory, rare Rainbow LEGO Bricks and a hidden Rainbow Shop, Stud Skins, click combos, save export/import and settings.</p></div><div class="news-entry"><b>Ultimate Update</b><p>Golden Brick rarities, Ascension Skill Tree, random Golden Bricks, achievement rewards and lifetime records.</p></div><div class="news-entry"><b>Golden Bricks & Achievements</b><p>145 achievements, Golden Shards and upgrades, temporary Golden Brick buffs, random brick spawns and dedicated shops.</p></div><div class="news-entry"><b>Progression & Save Improvements</b><p>Ascension prices scale by 1.25×. Burn All Studs now erases everything, including achievements and lifetime records.</p></div></section></div>
+
+<div class="tab-page" id="page-settings" hidden><section class="panel"><h2>Settings</h2><label class="settings-row">Sound effects <input id="settingSound" type="checkbox"></label><label class="settings-row">Reduced animations <input id="settingMotion" type="checkbox"></label><label class="settings-row">Number display <span class="number-setting-info">Compact: K, M, B, T (T keeps stacking)</span></label><div class="shop"><button class="upgrade" id="exportSave">Export save file</button><button class="upgrade" id="importSave">Import save file</button></div><input id="importFile" type="file" accept=".json,application/json" hidden><p class="note">Your game autosaves in this browser. Export a JSON backup before changing browsers, devices, or moving the HTML file. If a save fails, export a backup from this page.</p><div class="misprint-panel" id="misprintPanel" role="group" aria-label="Display calibration"><span>Display calibration</span><button type="button" id="misprintTrigger" class="misprint-trigger" aria-label="Inspect unusual colour patch" title="Something looks different here"></button></div>
+<div id="secretMiniGame" class="secret-minigame" hidden><div class="mini-head"><strong>Colour Calibration</strong><button type="button" id="miniClose">Close</button></div><p class="muted">Find the three slightly different tiles, one at a time.</p><div class="mini-tiles" id="miniTiles"></div><p id="miniStatus" class="muted"></p></div>
+<div class="danger-zone"><h3>Danger zone</h3><div class="reset-choice"><b>Burn All Studs — restart a run</b><p>Resets current studs, upgrades, currencies, ascensions and unclaimed Burnt LEGO Challenge progress. Keeps achievements, lifetime records, unlocked skins, hats and your collected hidden bricks. Claim at most one eligible Burnt LEGO Challenge skin per burn.</p><button class="burn" id="reset" type="button">Burn All Studs</button></div><div class="reset-choice"><b>Full Wipe — completely start over</b><p>Deletes EVERYTHING for this game: all saved progress, lifetime records, achievements, ascensions, hidden bricks, hats, skins, Burnt LEGO Challenge rewards and browser save backups. This cannot be undone unless you exported a separate save file.</p><button class="full-wipe" id="fullWipe" type="button">Full Wipe Everything</button></div></div><div class="secret-scroll-tunnel"><p class="muted">There might be something hiding at the very bottom of this page.</p><div class="secret-scroll-track"></div><div class="secret-scroll-finish">End of Settings <button type="button" class="secret-brick" data-secret="49" aria-label="Collect hidden brick 50" title="Hidden brick"></button></div></div></section></div>
+</main>
+
+<div class="puzzle-overlay" id="huntOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="huntHeading"><div class="puzzle-box"><div class="puzzle-head"><h2 id="huntHeading">Secret challenge</h2><button type="button" id="huntClose">Close</button></div><p id="huntInstructions"></p><div id="huntActions" class="puzzle-actions"></div><div id="huntMeter" class="puzzle-meter"></div></div></div>
+<div class="offline-overlay" id="offlinePopup" hidden role="dialog" aria-modal="true" aria-labelledby="offlineHeading"><div class="offline-dialog"><div style="font-size:40px">☾</div><h2 id="offlineHeading">Welcome back!</h2><p id="offlineDuration">While you were away...</p><div class="num" id="offlineReward">+0 studs</div><p class="muted" id="offlineDetails"></p><button type="button" id="offlineDismiss">Collect Studs</button></div></div>
+<script>
+// Show only the chosen page while keeping the entire game running.
+const pageButtons=[...document.querySelectorAll(".tab-button")];
+function openPage(page){
+  for(const button of pageButtons){
+    const selected=button.dataset.page===page;
+    button.setAttribute("aria-selected",String(selected));
+    document.getElementById("page-"+button.dataset.page).hidden=!selected;
+  }
+  document.getElementById('upgradeMenu').open=false;
+  window.scrollTo({top:0,behavior:"instant"});
+}
+for(const button of pageButtons){button.addEventListener("click",()=>openPage(button.dataset.page));}
+
+const $=id=>document.getElementById(id);
+// Compact short-scale names from thousand up to the largest finite JavaScript Number.
+// K, M, B, T, Qa, Qi, ... Vg (vigintillion), ... Ce (centillion), UCe (uncentillion).
+// IEEE-754 Number.MAX_VALUE is ~179.77UCe. Never expose scientific e+ notation.
+const shortScaleSuffixes=["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad","Qid","Sxd","Spd","Ocd","Nod","Vg"];
+const tenIllionSuffixes={20:"Vg",30:"Trg",40:"Qag",50:"Qig",60:"Sxg",70:"Spg",80:"Ocg",90:"Nog",100:"Ce"};
+const unitIllionPrefixes=["","U","D","Tr","Qa","Qi","Sx","Sp","Oc","No"];
+function scaleSuffix(group){
+ if(group<shortScaleSuffixes.length)return shortScaleSuffixes[group];
+ const illion=group-1;
+ const tens=Math.floor(illion/10)*10;
+ return unitIllionPrefixes[illion%10]+(tenIllionSuffixes[tens]||"Ce");
+}
+function fmt(value){
+ const n=Number(value);
+ if(Number.isNaN(n))return "0";
+ if(!Number.isFinite(n))return n<0?"−∞":"∞";
+ const abs=Math.abs(n);
+ if(abs<1000)return Math.floor(n).toLocaleString('en-US');
+ let group=Math.min(102,Math.floor(Math.log10(abs)/3));
+ let scaled=n/Math.pow(10,group*3);
+ // Avoid a 1,000Qa rounding edge when the next named suffix exists.
+ if(Math.abs(scaled)>=999.5&&group<102){group++;scaled=n/Math.pow(10,group*3);}
+ const digits=Math.abs(scaled)>=100?0:Math.abs(scaled)>=10?1:2;
+ return scaled.toLocaleString('en-US',{maximumFractionDigits:digits})+scaleSuffix(group);
+}
+const formatMultiplier=n=>Math.abs(n)>=1000?fmt(n)+'×':(Number.isFinite(n)?n.toFixed(2):'∞')+'×';
+
+const normal=[
+["Better Bricks","🧱","+1 per click",25,0],
+["LEGO Builder","👷","+1 per second",50,1],
+["Brick Factory","🏭","+5 per second",500,5],
+["Brick Empire","🚀","+25 per second",2500,25],
+["Construction Site","🏗️","+100 per second",10000,100],
+["Brick Transport","🚂","+500 per second",50000,500],
+["LEGO Headquarters","🏢","+2,500 per second",250000,2500],
+["Global LEGO","🌎","+10,000 per second",1000000,10000],
+["LEGO Planet","🪐","+50,000 per second",5000000,50000],
+["LEGO Universe","👑","+250,000 per second",25000000,250000],
+["Golden LEGO","✨","+1,000,000 per second",100000000,1000000],
+["Alien LEGO Factory","👽","+5,000,000 per second",500000000,5000000],
+["Moon Base","🌙","+25,000,000 per second",2500000000,25000000],
+["Solar System","☀️","+125,000,000 per second",12500000000,125000000],
+["Galaxy Factory","🌌","+625,000,000 per second",62500000000,625000000],
+["Cosmic LEGO","💫","+3.1 billion per second",300000000000,3125000000],
+["Dimension Portal","🌀","+15.6 billion per second",1500000000000,15625000000],
+["Time Machine","⏳","+78 billion per second",7500000000000,78125000000],
+["Multiverse HQ","🌐","+390 billion per second",40000000000000,390625000000],
+["Infinity Foundry","♾️","+1.95 trillion per second",200000000000000,1953125000000],
+["Reality Builder","🔮","+9.7 trillion per second",1000000000000000,9765625000000],
+["Omni-Brick","💠","+48.8 trillion per second",5000000000000000,48828125000000],
+["LEGO Singularity","⚛️","+244 trillion per second",25000000000000000,244140625000000],
+["The Brickverse","🏆","+1.2 quadrillion per second",125000000000000000,1220703125000000]
+];
+
+const cosmicUpgrades=[
+["Quantum Constructor","⚛️","+1e18 studs per second",1e21,1e18],
+["Nebula Foundry","🌌","+1e23 studs per second",1e26,1e23],
+["Eternity Reactor","🔆","+1e28 studs per second",1e31,1e28],
+["Omniversal Engine","💫","+1e33 studs per second",1e36,1e33],
+["Reality Loom","🪐","+1e38 studs per second",1e41,1e38],
+["Transcendent Forge","🌠","+1e43 studs per second",1e46,1e43],
+["Infinite Stud Matrix","♾️","+1e48 studs per second",1e51,1e48],
+["Vigintillion Gateway","🚀","+1e53 studs per second",1e56,1e53]];
+normal.push(...cosmicUpgrades);
+// Beyond vigintillion: attainable production steps through the centillion range.
+// Costs and outputs remain finite; purchasing these unlocks extremely late lifetime goals.
+const beyondUpgrades=[
+ ["Nebular Architect","🌠",57,69],
+ ["Galactic Loom","🧬",72,84],
+ ["Trillion-Star Engine","🌌",87,99],
+ ["Eternal Assembly","🔱",102,114],
+ ["Quadragintillion Forge","⚒️",117,129],
+ ["Celestial Megastructure","🛸",132,144],
+ ["Fiftyfold Cosmos","☄️",147,159],
+ ["Stellar Fabricator","🌟",162,174],
+ ["Universe Foundry","🏛️",177,189],
+ ["Cosmic Continuum","🔮",192,204],
+ ["Seventieth Horizon","🪄",207,219],
+ ["Eternity Blueprint","📜",222,234],
+ ["Absolute Creation","💠",237,249],
+ ["Eightyfold Furnace","🔥",252,264],
+ ["Infinite Constellation","✨",267,279],
+ ["Ninetyfold Nexus","🌙",282,294],
+ ["Uncentillion Portal","🚀",297,303]
+];
+for(const [name,icon,costPower,outputPower] of beyondUpgrades)
+ normal.push([name,icon,"",Math.pow(10,costPower),Math.pow(10,outputPower)]);
+// v1.46: Slow down progression across all tiers, especially the cosmic endgame.
+// Cost increases are applied once to the base prices, not to existing save data.
+normal.forEach((item,i)=>{
+  const factor=i<12?2:i<24?8:i<32?1000:10000000;
+  item[3]=Math.min(Number.MAX_VALUE,item[3]*factor);
+});
+// Use the same compact number notation in every upgrade description.
+normal.forEach((item,i)=>{if(i>0)item[2]='+'+fmt(item[4])+' studs per second';});
+const endgameAutoBoost=()=>1;
+const endgameClickBoost=()=>1;
+const special=[
+["Golden Touch","✨","Double your click power",2,"click"],
+["Super Builders","🤖","Double automatic production",3,"auto"],
+["Discount Bricks","💎","Reduce normal upgrade prices by 10%",4,"discount"],
+["Stud Magnet","🧲","Triple your click power",7,"click3"],
+["Mega Factory","⚙️","Triple automatic production",10,"auto3"],
+["Royal LEGO Crown","👑","Double all production",15,"all"],
+["Golden Empire","🏰","Triple all production",22,"all3"],
+["Click Singularity","🖱️","Multiply click power by 5",30,"click5"],
+["Cosmic Factories","🌠","Multiply automatic production by 5",40,"auto5"],
+["Master Architect","📐","Reduce normal upgrade prices by another 15%",55,"discount2"],
+["Infinite Crown","💎","Multiply all production by 5",75,"all5"],
+["The LEGO Creator","🌟","Multiply all production by 10",100,"all10"]
+];
+
+let money=0,total=0,owned=Array(normal.length).fill(0);
+let ap=0,ascensions=0,clicks=0,permanent=Array(special.length).fill(false);
+let lifetimeStuds=0,lifetimeAuto=0,runClicks=0,noClickRunStuds=0,bestNoClick=0;
+let ascensionLifetimeBaseline=0;
+let goldenCollected=0,frenzies=0,upgradesPurchased=0,nextGoldenSpawnAt=0,goldenVisible=false,goldenExpiresAt=0,goldenX=0,goldenY=0,frenzyUntil=0,clickStormUntil=0,overdriveUntil=0;
+let goldShards=0,goldUpgrades=Array(10).fill(0);
+let rainbowLuckLevel=0,rainbowBuffUntil=0,rainbowBuffType="",rainbowBuffCount=0;
+let ownedHats=["none"],selectedHat="none";
+const goldItems=[
+["Golden Clock","⏱️","Shortens the 1–5 minute Golden Brick spawn interval by 10% per level (up to 50%).",[2,4,7,11,16]],
+["Frenzy Fuel","🔥","Each level adds 15 seconds to Frenzy (up to +75s).",[2,4,7,11,16]],
+["Frenzy Power","⚡","Each level adds +2× to Frenzy (up to 17×).",[3,5,8,12,18]],
+["Golden Fortune","💰","Each level boosts Golden Brick payouts by 20% (up to +100%).",[2,4,7,11,16]],
+["Golden Factory","🏭","Each level gives +10% to all stud production (up to +50%).",[3,6,9,13,19]],
+["Shard Magnet","🧲","Each level gives +1 shard per Golden Brick (up to +3).",[5,10,18]],
+["Lucky Brick","🍀","Each level adds a 10% chance for a Golden Brick to give TWO different rewards (up to 30%).",[5,10,18]],
+["Lingering Magic","✨","Each level makes Frenzy, Click Storm and Factory Overdrive last 30% longer (up to +150%).",[6,10,16,24,36]],
+["Patient Collector","⌛","Each level keeps Golden and Rainbow Bricks visible 10 seconds longer (up to 65 seconds).",[4,7,12,18,27]],
+["Rainbow Luck","🌈","Each level improves the Rainbow Brick spawn chance, from 1 in 10,000 to 1 in 2,000 at level 10. Extremely expensive Golden Shard upgrades.",[100,250,600,1500,4000,10000,25000,60000,150000,400000]]
+];
+const goldProduction=()=>1+0.1*goldUpgrades[4];
+const frenzyStrength=()=>7+2*goldUpgrades[2];
+const frenzyDuration=()=>(60000+15000*goldUpgrades[1])*effectDurationBoost();
+const goldSpawnDelay=()=> (1+Math.random()*4)*60000*(1-0.1*goldUpgrades[0]);
+const effectDurationBoost=()=>(1+0.3*goldUpgrades[7])*(skillOwned[6]?1.5:1);
+const rainbowSpawnDenominator=()=>Math.round(10000-800*rainbowLuckLevel);
+const rainbowLuckCosts=[1e15,1e18,1e21,1e24,1e27,1e30,1e33,1e37,1e42,1e48];
+const rainbowBuffs=[{id:"hyperclick",name:"Prismatic Fingerstorm",detail:"×1,111 click power",duration:180000},{id:"hyperauto",name:"Infinite Assembly",detail:"×2,222 automatic production",duration:180000},{id:"hyperall",name:"Spectrum Overload",detail:"×777 all production",duration:150000},{id:"hyperfortune",name:"Rainbow Jackpot",detail:"×10,000 instant production payout",duration:180000}];
+const rainbowBuffActive=id=>Date.now()<rainbowBuffUntil&&rainbowBuffType===id;
+const rainbowClickBoost=()=>rainbowBuffActive("hyperclick")?1111:rainbowBuffActive("hyperall")?777:1;
+const rainbowAutoBoost=()=>rainbowBuffActive("hyperauto")?2222:rainbowBuffActive("hyperall")?777:1;
+const brickVisibleDuration=()=>15000+10000*goldUpgrades[8];
+let unlockedAchievements=[];
+let hiddenBrickIds=[];
+let hiddenBrickSeed=Math.floor(Math.random()*2147483647);
+let cornerTrailStep=0;
+let secretSettingsReached=false;
+let secretPageExplorer=false;
+let secretPagesVisited=[];
+let secretNewsVisited=false;
+let secretSkinEquips=0;
+let secretSettingsScroll=0;
+let skillOwned=Array(9).fill(false), skillPoints=0, totalSkillPointsEarned=0;
+let nextEventAt=0, eventType="", eventUntil=0, eventsSeen=0, highestSps=0, highestClick=0, highestBalance=0, bestRun=0, playSeconds=0, goldenRarityCounts=Array(5).fill(0);
+const rarities=[{name:"Common",icon:"🟨",weight:58,scale:1,color:"#eabf52"},{name:"Rare",icon:"💙",weight:25,scale:1.75,color:"#60a5fa"},{name:"Epic",icon:"💜",weight:11,scale:3,color:"#c084fc"},{name:"Legendary",icon:"🧡",weight:5,scale:6,color:"#fb923c"},{name:"Mythic",icon:"🌈",weight:1,scale:12,color:"#f472b6"}];
+let currentRarity=0;
+let rainbowDiscovered=false,rainbowShards=0,rainbowFound=0,rainbowVisible=false,rainbowExpiresAt=0,rainbowX=0,rainbowY=0,brickSpawnCount=0;
+let comboClicks=0,lastComboClickAt=0,bestCombo=0,selectedSkin="classic",researchOwned=Array(5).fill(false),rainbowOwned=Array(4).fill(false);
+let settings={sound:false,reducedMotion:false,numbers:"short"};
+const researchItems=[
+["Efficient Motors","+15% automatic stud production",5000,"auto"],
+["Precision Press","+15% click production",15000,"click"],
+["Golden Scanner","+10% Golden Shard rewards",100000,"shards"],
+["Turbo Gears","+30% automatic stud production",750000,"auto2"],
+["Stud Reactor","+20% all production",5000000,"all"]];
+const rainbowItems=[
+["Prismatic Core","×5 all production",2],
+["Rainbow Dynamo","×12 automatic production",4],
+["Spectrum Touch","×12 click production",6],
+["Eternal Spectrum","×3 Rainbow Brick payout effects duration",10]];
+const hats=[
+["none","No Hat","✧",0],
+["top_hat","Top Hat","🎩",50000],
+["crown","Royal Crown","👑",1e8],
+["cap","Builder Cap","🧢",1e6],
+["wizard","Wizard Hat","🧙",1e12],
+["party","Party Hat","🥳",1e15],
+["halo","Celestial Halo","😇",1e20],
+["flower","Flower Crown","🌸",1e24],
+["helmet","Astral Helmet","🪖",1e30],
+["star","Star Crown","🌟",1e40],
+["rainbow","Rainbow Tiara","🌈",1e50]];
+let clickEffect="sparkle";
+const skins=[
+["classic","Classic Red","circle",()=>true],
+["gold","Gold Coin","circle",()=>lifetimeStuds>=10000],
+["ocean","Ocean Orb","circle",()=>lifetimeStuds>=1000000],
+["amethyst","Amethyst Gem","diamond",()=>ascensions>=5],
+["diamond","Diamond","diamond",()=>lifetimeStuds>=100000000],
+["galaxy","Galaxy Hex","hex",()=>ascensions>=20],
+["rainbow","Rainbow Orb","circle",()=>rainbowDiscovered],
+["obsidian","Obsidian Diamond","diamond",()=>rainbowFound>=3]];
+// Achievement mastery: ten cosmetic rewards at achievement milestones.
+const masterySkinGoals=[10,25,50,75,100,150,200,275,375,500];
+const masterySkinNames=['Copper Spark','Mint Circuit','Azure Pulse','Rose Quartz','Amber Nova','Violet Orbit','Frost Crown','Solar Halo','Nebula Heart','Eternal Aurora'];
+const masterySkinColors=[['#ffe5bc','#c67a42','#6a3d22'],['#d4ffe5','#4fcca4','#15665e'],['#c8f3ff','#348fd8','#1a3e8c'],['#ffe2ee','#ef7ab1','#852a65'],['#fff2bd','#f0a933','#914716'],['#e6d4ff','#9865e7','#402481'],['#ffffff','#94e2f7','#3c7ca9'],['#fff4c0','#ffc34f','#e26a23'],['#f8cfff','#ab5de1','#2e246e'],['#f8fff4','#8ff9c8','#a077ff']];
+// Burnt LEGO Challenges are multi-system feats, not copies of single-stat achievements.
+// All conditions must be true at the moment Burn All Studs is pressed.
+let burnFeats={perfectStorm:false,cornerTrailCompleted:false,prismaticEclipses:0,rainbowsThisCycle:0};
+let burnRarityCounts=Array(5).fill(0),reinforcementCount=0,reinforcementThisCycle=0;
+const burnChallengeDefinitions=[
+ ['phoenix','Phoenix Ember','THE SILENT INFERNO: Build an enormous empire without lifting a finger. Knowledge must be complete.',()=>total>=1e12&&runClicks===0&&researchOwned.every(Boolean)],
+ ['cinder','Cinder Core','PERFECT STORM: Find your rhythm when two golden powers collide at their peak.',()=>burnFeats.perfectStorm],
+ ['ashen','Ashen Crown','THE LOST ARCHIVE: Uncover every secret, follow the wandering mark, and master the colours of the spectrum.',()=>hiddenBrickIds.length>=50&&burnFeats.cornerTrailCompleted&&unlockedAchievements.length>=500&&burnFeats.rainbowsThisCycle>=10],
+ ['inferno','Inferno Prism','PRISMATIC ECLIPSE: Gather every shade of golden rarity, and let the rainbow complete the set.',()=>burnRarityCounts.every(n=>n>=2)&&burnFeats.rainbowsThisCycle>=2],
+ ['reborn','Reborn Star','THE IMPOSSIBLE BLUEPRINT: Leave no branch of knowledge, power, or colour unfinished.',()=>permanent.every(Boolean)&&skillOwned.every(Boolean)&&researchOwned.every(Boolean)&&rainbowOwned.every(Boolean)&&goldUpgrades.slice(0,9).every((v,i)=>v>=goldItems[i][3].length)&&rainbowLuckLevel>=10]
+];
+const BURN_LEGACY_KEY='legoStudClickerBurnMastery';
+let burnLegacy=[];
+let permanentSkinUnlocks=[];
+try{const saved=JSON.parse(localStorage.getItem(BURN_LEGACY_KEY)||'[]');if(Array.isArray(saved))burnLegacy=saved.filter(x=>burnChallengeDefinitions.some(d=>d[0]===x));}catch(e){}
+masterySkinGoals.forEach((goal,i)=>skins.push(['mastery_'+i,masterySkinNames[i],'circle',()=>permanentSkinUnlocks.includes('mastery_'+i)||unlockedAchievements.length>=goal]));
+burnChallengeDefinitions.forEach(([id,name])=>skins.push(['burn_'+id,name,'hex',()=>burnLegacy.includes(id)||permanentSkinUnlocks.includes('burn_'+id)]));
+// Preserve unlocked cosmetics independently from current-run progress.
+for(const skin of skins){const original=skin[3];skin[3]=()=>permanentSkinUnlocks.includes(skin[0])||original();}
+function captureUnlockedSkins(){for(const skin of skins)if(skin[3]()&&!permanentSkinUnlocks.includes(skin[0]))permanentSkinUnlocks.push(skin[0]);}
+function renderMastery(){
+ const done=unlockedAchievements.length;
+ const next=masterySkinGoals.find(x=>done<x);
+ const target=next||500;
+ $('masterySummary').textContent=done+' / '+achievements.length+' achievements · '+masterySkinGoals.filter(x=>done>=x).length+' / 10 mastery skins unlocked';
+ $('masteryFill').style.width=Math.min(100,done/target*100)+'%';
+ $('masteryNext').textContent=next?'Next skin at '+next+' achievements':'All 10 mastery skins unlocked!';
+ $('masterySkins').innerHTML=masterySkinGoals.map((goal,i)=>`<div class="mastery-chip ${done>=goal?'earned':''}"><span>${done>=goal?'✦':'◇'}</span><b>${masterySkinNames[i]}</b><small>${goal} achievements</small></div>`).join('');
+ const rarities=Object.keys(rarityInfo);
+ $('rarityBreakdown').innerHTML=rarities.map(r=>{const all=achievements.filter(a=>achievementRarity(a[0])===r).length,got=unlockedAchievements.filter(id=>achievementRarity(id)===r).length;return `<div class="rarity-meter rarity-${r.toLowerCase()}"><b>${r}</b><span>${got} / ${all}</span><div class="mini-track"><div style="width:${all?got/all*100:0}%"></div></div></div>`}).join('');
+ $('burnChallenges').innerHTML=burnChallengeDefinitions.map(([id,name,desc,condition])=>`<div class="burn-challenge ${burnLegacy.includes(id)?'earned':''}"><b>${burnLegacy.includes(id)?'✓ ':''}${name}</b><small>${burnLegacy.includes(id)?'Skin permanently unlocked':condition()?'Ready — use Burn All Studs to claim':desc}</small></div>`).join('');
+}
+// Offline production upgrades form a permanent branching tree.
+const offlineNodes=[
+ ["Idle Starter","Increase offline efficiency by 10 percentage points",10000,[]],
+ ["Reserve Batteries","Increase offline time limit by 1 hour",75000,[0]],
+ ["Sleep Mode","Increase offline efficiency by 10 percentage points",250000,[0]],
+ ["Extended Storage","Increase offline time limit by 2 hours",2000000,[1]],
+ ["Quiet Factories","Increase offline efficiency by 15 percentage points",10000000,[2]],
+ ["Long-Term Power","Increase offline time limit by 3 hours",100000000,[3,4]],
+ ["Night Shift","Increase offline efficiency by 10 percentage points",500000000,[4]],
+ ["Deep Storage","Increase offline time limit by 4 hours",2000000000,[5,6]]
+];
+let offlineOwned=Array(offlineNodes.length).fill(false),offlineLastSeen=0,offlineSavedSps=0,offlineLifetime=0,offlineSessions=0;
+const offlineEfficiency=()=>Math.min(.65,.10+(offlineOwned[0]?.10:0)+(offlineOwned[2]?.10:0)+(offlineOwned[4]?.15:0)+(offlineOwned[6]?.10:0));
+const offlineHours=()=>2+(offlineOwned[1]?1:0)+(offlineOwned[3]?2:0)+(offlineOwned[5]?3:0)+(offlineOwned[7]?4:0);
+function renderOffline(){
+ $("offlineRate").textContent=Math.round(offlineEfficiency()*100)+"%";
+ $("offlineCap").textContent=offlineHours()+" hours";
+ $("offlineTree").innerHTML=offlineNodes.map(([name,desc,cost,requires],i)=>{
+  const owned=offlineOwned[i],ready=requires.every(j=>offlineOwned[j]);
+  return `<button type="button" class="offline-node ${owned?'learned':''}" data-offline="${i}" ${owned||!ready||money<cost?'disabled':''}><b>${owned?'✓ ':''}${name}</b><small>${desc}</small><small>${owned?'Researched':ready?'Cost: '+fmt(cost)+' studs':'Requires: '+requires.map(j=>offlineNodes[j][0]).join(' + ')}</small></button>`;
+ }).join('');
+}
+function grantOfflineEarnings(){
+ const now=Date.now(),seconds=Math.max(0,(now-offlineLastSeen)/1000);
+ if(!offlineLastSeen||seconds<60)return;
+ const counted=Math.min(seconds,offlineHours()*3600);
+ // Snapshot of last saved online production, clamped below the current online rate.
+ const base=Math.max(0,Math.min(offlineSavedSps,sps()));
+ const earned=Math.floor(base*counted*offlineEfficiency());
+ if(earned<=0)return;
+ gain(earned,true);offlineLifetime+=earned;offlineSessions++;
+ $("offlineDuration").textContent="You were away for "+Math.floor(seconds/3600)+"h "+Math.floor(seconds%3600/60)+"m ("+Math.round(counted/60)+" minutes counted).";
+ $("offlineReward").textContent="+"+fmt(earned)+" studs";
+ $("offlineDetails").textContent=Math.round(offlineEfficiency()*100)+"% of your saved production rate; never as much as online production.";
+ $("offlinePopup").hidden=false;
+}
+$("offlineTree").addEventListener("click",e=>{const b=e.target.closest("[data-offline]");if(!b)return;const i=Number(b.dataset.offline),item=offlineNodes[i];if(offlineOwned[i]||!item[3].every(j=>offlineOwned[j])||money<item[2])return;money-=item[2];offlineOwned[i]=true;render();saveGame();});
+$("offlineDismiss").addEventListener("click",()=>{$("offlinePopup").hidden=true;saveGame();});
+const comboMultiplier=()=>Math.min(5,1+Math.floor(comboClicks/5)*0.005);
+const researchAll=()=>researchOwned[4]?1.2:1;
+const researchClick=()=>researchOwned[1]?1.15:1;
+const researchAuto=()=> (researchOwned[0]?1.15:1)*(researchOwned[3]?1.3:1);
+const rainbowAll=()=>rainbowOwned[0]?5:1;
+const rainbowAuto=()=>rainbowOwned[1]?12:1;
+const rainbowClick=()=>rainbowOwned[2]?12:1;
+const displayNum=fmt;
+function spawnClickParticles(e){
+ if(clickEffect==='off'||settings.reducedMotion)return;
+ const count=clickEffect==='burst'?9:clickEffect==='minimal'?1:5;
+ for(let i=0;i<count;i++){
+  const el=document.createElement('span');el.className='click-particle';el.textContent=clickEffect==='burst'?'●':clickEffect==='minimal'?'·':'✦';
+  el.style.left=(e.clientX||innerWidth/2)+'px';el.style.top=(e.clientY||innerHeight/2)+'px';
+  const a=Math.PI*2*i/count,dist=clickEffect==='minimal'?16:35+Math.random()*45;
+  el.style.setProperty('--dx',Math.cos(a)*dist+'px');el.style.setProperty('--dy',Math.sin(a)*dist+'px');
+  document.body.append(el);setTimeout(()=>el.remove(),700);
+ }
+}
+function applyHat(){const hat=document.getElementById("studHat");if(!hat)return;const data=hats.find(h=>h[0]===selectedHat)||hats[0];hat.textContent=data[0]==="none"?"":data[2];hat.setAttribute("aria-label",data[1]);}
+function applySkin(){const skin=skins.find(x=>x[0]===selectedSkin&&x[3]())||skins[0];selectedSkin=skin[0];$("brick").dataset.skin=skin[0];$("brick").dataset.shape=skin[2];const i=Number(skin[0].split("_")[1]);if(skin[0].startsWith("mastery_")&&masterySkinColors[i]){const c=masterySkinColors[i];$("brick").style.setProperty("--skin-light",c[0]);$("brick").style.setProperty("--skin-mid",c[1]);$("brick").style.setProperty("--skin-dark",c[2]);}}
+function skinUnlockReason(skin){
+ const id=skin[0];
+ const reasons={
+  classic:'Available from the beginning',
+  gold:'Earn 10,000 lifetime studs',
+  ocean:'Earn 1 million lifetime studs',
+  amethyst:'Reach 5 ascensions',
+  diamond:'Earn 100 million lifetime studs',
+  galaxy:'Reach 20 ascensions',
+  rainbow:'Discover your first Rainbow Brick',
+  obsidian:'Collect 3 Rainbow Bricks'
+ };
+ if(Object.prototype.hasOwnProperty.call(reasons,id))return reasons[id];
+ if(id.startsWith('mastery_')){
+  const i=Number(id.slice(8));
+  return 'Unlock '+masterySkinGoals[i]+' achievements';
+ }
+ if(id.startsWith('burn_')){
+  const challenge=burnChallengeDefinitions.find(x=>x[0]===id.slice(5));
+  return 'Complete Burning..';
+ }
+ return 'Unlock through gameplay';
+}
+function renderExtras(){
+$("rainbowTab").hidden=false;
+$("rainbowShards").textContent=fmt(rainbowShards);
+$("rainbowLuckShop").innerHTML=`<button class="upgrade" data-rainbow-luck ${rainbowLuckLevel>=10||money<rainbowLuckCosts[rainbowLuckLevel]?"disabled":""}><span style="font-size:25px">🍀</span><span class="details"><b>Rainbow Luck · ${rainbowLuckLevel}/10</b><div class="small">Rainbow chance: 1 in ${fmt(rainbowSpawnDenominator())} · max 1 in 2,000</div><div class="cost">${rainbowLuckLevel>=10?"MAX LEVEL":"Cost: "+fmt(rainbowLuckCosts[rainbowLuckLevel])+" studs"}</div></span></button>`;
+$("hatShop").innerHTML=hats.map(h=>`<button class="skin-tile ${selectedHat===h[0]?"active":""}" data-hat="${h[0]}" ${!ownedHats.includes(h[0])&&money<h[3]?"disabled":""}><span class="hat-icon">${h[2]}</span><b>${h[1]}</b><small>${selectedHat===h[0]?"Equipped":ownedHats.includes(h[0])?"Owned · equip":"Buy for "+fmt(h[3])+" studs"}</small></button>`).join("");
+$("equippedHatName").textContent=(hats.find(h=>h[0]===selectedHat)||hats[0])[1];
+$("rainbowShop").innerHTML=rainbowItems.map((x,i)=>`<button class="upgrade" data-rainbow-upgrade="${i}" ${rainbowOwned[i]||rainbowShards<x[2]?"disabled":""}><span class="details"><b>${x[0]}</b><div class="small">${x[1]}</div><div class="cost">${rainbowOwned[i]?"Researched":x[2]+" Rainbow Shards"}</div></span></button>`).join("");
+$("researchShop").innerHTML=researchItems.map((x,i)=>`<button class="upgrade" data-research="${i}" ${researchOwned[i]||money<x[2]?"disabled":""}><span class="details"><b>${x[0]}</b><div class="small">${x[1]}</div><div class="cost">${researchOwned[i]?"Researched":fmt(x[2])+" studs"}</div></span></button>`).join("");
+$("skinShop").innerHTML=skins.map(x=>`<button class="skin-tile ${selectedSkin===x[0]?"active":""}" data-skin-choice="${x[0]}" ${!x[3]()?"disabled":""}><b>${x[1]}</b><small>${x[3]()?(selectedSkin===x[0]?"Equipped":"Unlocked — equip skin"):"Locked"}</small><span class="skin-unlock-reason">${skinUnlockReason(x)}</span></button>`).join("");
+document.querySelectorAll("[data-effect]").forEach(b=>b.classList.toggle("active",b.dataset.effect===clickEffect));
+applySkin();applyHat();$("rainbowBrick").style.display=rainbowVisible?"block":"none";
+$("comboStatus").textContent="Click combo: "+comboMultiplier().toFixed(2)+"× ("+comboClicks+" clicks)";
+}
+function spawnRainbow(now=Date.now()){
+ rainbowVisible=true;rainbowExpiresAt=now+brickVisibleDuration();
+ const el=$("rainbowBrick");el.classList.remove("brick-fading","brick-appearing");el.style.display="block";void el.offsetWidth;el.classList.add("brick-appearing");
+ rainbowX=12+Math.random()*Math.max(0,innerWidth-280);rainbowY=12+Math.random()*Math.max(0,innerHeight-100);
+ el.style.left=rainbowX+"px";el.style.top=rainbowY+"px";
+}
+function endRainbow(){rainbowVisible=false;rainbowExpiresAt=0;$("rainbowBrick").style.display="none";}
+function playClickSound(){if(!settings.sound)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=470;gain.gain.value=.035;osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.035);osc.onended=()=>ctx.close();}catch{}}
+function updateSettings(){document.body.classList.toggle("reduce-motion",settings.reducedMotion);$("settingSound").checked=settings.sound;$("settingMotion").checked=settings.reducedMotion;}
+
+const skills=[
+["Strong Foundations","🧱","+25% all production",[],"all"],
+["Quick Fingers","👆","+50% clicking",[0],"click"],
+["Smart Machines","⚙️","+50% automatic production",[0],"auto"],
+["Master Tapper","⚡","Double clicking power",[1],"click2"],
+["Assembly Line","🏭","Double automatic production",[2],"auto2"],
+["Golden Instinct","🌟","+1 Golden Shard per brick",[1,2],"shard"],
+["Golden Enchanter","✨","+50% Golden Brick effect duration",[3,4],"event"],
+["Brick Alchemist","💎","+50% Golden payouts",[5],"payout"],
+["Brick Overlord","👑","Double all production",[6,7],"all2"]
+];
+const skillAll=()=> (skillOwned[0]?1.25:1)*(skillOwned[8]?2:1);
+const skillClick=()=> (skillOwned[1]?1.5:1)*(skillOwned[3]?2:1);
+const skillAuto=()=> (skillOwned[2]?1.5:1)*(skillOwned[4]?2:1);
+const eventDelay=()=> (3+Math.random()*4)*60000;
+function scheduleEvent(){nextEventAt=Date.now()+eventDelay();}
+const eventBonus=()=>skillOwned[6]?1.5:1;
+const eventAll=()=>1;
+const eventClick=()=>1;
+const eventAuto=()=>1;
+function startEvent(){const options=["rain","click","factory"];eventType=options[Math.floor(Math.random()*options.length)];eventUntil=Date.now()+45000;eventsSeen++;scheduleEvent();$("message").textContent="🎉 Surprise event: "+({rain:"Stud Rain",click:"Click Carnival",factory:"Factory Festival"}[eventType])+"!";}
+function drawSkills(){
+$("skillPoints").textContent=fmt(skillPoints);
+$("skillTree").innerHTML=skills.map((x,i)=>{const owned=skillOwned[i],ready=x[3].every(j=>skillOwned[j]);return `<button class="skill-node ${owned?'learned':''}" data-skill="${i}" ${owned||!ready||skillPoints<1?'disabled':''}><span class="skill-icon">${x[1]}</span><span><b>${x[0]}</b><small>${x[2]}</small><em>${owned?'✓ Learned':ready?'1 Skill Point':'🔒 Requires '+x[3].map(j=>skills[j][0]).join(' + ')}</em></span></button>`;}).join("");
+}
+function drawRecords(){
+const entries=[["Lifetime studs",lifetimeStuds],["Best balance",highestBalance],["Best run",bestRun],["Highest studs / sec",highestSps],["Highest click power",highestClick],["Total clicks",clicks],["Automatic studs",lifetimeAuto],["Best no-click run",bestNoClick],["Ascensions",ascensions],["Unspent Ascension Points",ap],["Skill Points earned",totalSkillPointsEarned],["Golden Bricks",goldenCollected],["Rainbow Bricks",rainbowFound],["Rainbow Shards",rainbowShards],["Combo record (clicks)",bestCombo],["Golden Shards",goldShards],["Frenzies",frenzies],["Golden reinforcements",reinforcementCount],["Normal upgrades bought",upgradesPurchased],["Playtime (minutes)",Math.floor(playSeconds/60)],["Lifetime offline studs",offlineLifetime],["Offline sessions",offlineSessions],...rarities.map((r,i)=>[r.name+" bricks",goldenRarityCounts[i]])];
+$("records").innerHTML=entries.map(([name,value])=>`<div class="record"><span>${name}</span><strong>${fmt(value)}</strong></div>`).join('');
+}
+
+const achievements=[
+["first","First Stud","Earn your first stud",()=>lifetimeStuds>=1],
+["hundred","Getting Started","Earn 100 lifetime studs",()=>lifetimeStuds>=100],
+["thousand","Brick Collector","Earn 1,000 lifetime studs",()=>lifetimeStuds>=1000],
+["million","Stud Millionaire","Earn 1 million lifetime studs",()=>lifetimeStuds>=1e6],
+["billion","Stud Billionaire","Earn 1 billion lifetime studs",()=>lifetimeStuds>=1e9],
+["trillion","Stud Trillionaire","Earn 1 trillion lifetime studs",()=>lifetimeStuds>=1e12],
+["quadrillion","Brick Legend","Earn 1 quadrillion lifetime studs",()=>lifetimeStuds>=1e15],
+["click1","First Click","Click the LEGO brick once",()=>clicks>=1],
+["click100","Click Happy","Click 100 times",()=>clicks>=100],
+["click1000","Click Master","Click 1,000 times",()=>clicks>=1000],
+["click10000","Click Legend","Click 10,000 times",()=>clicks>=10000],
+["upgrade1","First Upgrade","Buy a normal upgrade",()=>upgradesPurchased>=1],
+["upgrade25","Builder","Buy 25 normal upgrades",()=>upgradesPurchased>=25],
+["upgrade100","Architect","Buy 100 normal upgrades",()=>upgradesPurchased>=100],
+["upgrade500","Master Builder","Buy 500 normal upgrades",()=>upgradesPurchased>=500],
+["auto1","Automation Begins","Produce at least 1 stud per second",()=>sps()>=1],
+["auto1000","Factory Power","Produce 1,000 studs per second",()=>sps()>=1000],
+["autoMillion","Industrial Empire","Produce 1 million studs per second",()=>sps()>=1e6],
+["autoBillion","Industrial Universe","Produce 1 billion studs per second",()=>sps()>=1e9],
+["noClickMillion","Hands-Free Millionaire","Earn 1 million studs in a single run without clicking once",()=>bestNoClick>=1e6],
+["noClickBillion","Hands-Free Billionaire","Earn 1 billion studs in a single run without clicking once",()=>bestNoClick>=1e9],
+["ascend1","First Ascension","Ascend once",()=>ascensions>=1],
+["ascend5","Rising Star","Ascend 5 times",()=>ascensions>=5],
+["ascend10","Sky High","Ascend 10 times",()=>ascensions>=10],
+["ascend25","Ascension Legend","Ascend 25 times",()=>ascensions>=25],
+["permanent1","Forever Upgraded","Buy a permanent upgrade",()=>permanent.some(Boolean)],
+["permanent6","Halfway Eternal","Buy 6 permanent upgrades",()=>permanent.filter(Boolean).length>=6],
+["permanent12","Fully Eternal","Buy all 12 permanent upgrades",()=>permanent.every(Boolean)],
+["gold1","Golden Discovery","Collect a Golden LEGO Brick",()=>goldenCollected>=1],
+["gold10","Golden Hunter","Collect 10 Golden LEGO Bricks",()=>goldenCollected>=10],
+["gold50","Golden Champion","Collect 50 Golden LEGO Bricks",()=>goldenCollected>=50],
+["frenzy1","Frenzy Time","Activate a Golden Brick Frenzy",()=>frenzies>=1],
+["frenzy10","Frenzy Fan","Activate 10 Frenzies",()=>frenzies>=10]
+];
+// 112 additional milestone achievements, for 145 achievements total.
+const achievementMilestones=[
+["studs","Stud Fortune","lifetime studs",()=>lifetimeStuds,[1e4,1e5,1e7,1e8,1e10,1e11,1e13,1e14]],
+["taps","Brick Tapper","total brick clicks",()=>clicks,[10,50,250,500,2500,5000,25000,50000]],
+["purchases","Shopping Spree","normal upgrades purchased",()=>upgradesPurchased,[5,10,50,75,150,250,750,1500]],
+["production","Stud Engine","studs per second",()=>sps(),[10,100,1e4,1e5,1e7,1e8,1e10,1e12]],
+["clickpower","Click Power","studs per click",()=>clickPower(),[10,100,1e3,1e4,1e5,1e6,1e8,1e10]],
+["rebirth","Skyward","ascensions completed",()=>ascensions,[2,3,7,15,20,30,40,50]],
+["goldbricks","Golden Trail","Golden Bricks collected",()=>goldenCollected,[2,3,5,15,25,75,100,250]],
+["frenzies","Frenzy Expert","Frenzies activated",()=>frenzies,[2,3,5,15,25,50,100,200]],
+["autolifetime","Robot Empire","lifetime automatic studs",()=>lifetimeAuto,[100,1e3,1e4,1e5,1e6,1e8,1e10,1e12]],
+["handsfree","Hands-Free Hero","studs in one no-click run",()=>bestNoClick,[10,100,1e3,1e4,1e5,1e7,1e8,1e10]],
+["runstuds","One-Run Wonder","studs earned in a single run",()=>bestRun,[100,1e3,1e4,1e5,1e6,1e7,1e8,1e9]],
+["owned","Stud Collection","normal upgrades currently owned",()=>owned.reduce((a,b)=>a+b,0),[2,5,10,20,30,50,100,200]],
+["goldlevels","Golden Engineer","Golden Shop upgrade levels purchased",()=>goldUpgrades.reduce((a,b)=>a+b,0),[1,2,3,5,8,12,18,25]],
+["goldvariety","Golden Specialist","different Golden upgrades purchased",()=>goldUpgrades.filter(x=>x>0).length,[1,2,3,4,5,6,7,7]]
+];
+for(const [prefix,title,unit,measure,thresholds] of achievementMilestones){
+ thresholds.forEach((target,index)=>{
+  const distinctTitle=prefix==="goldvariety"&&index===7?"Golden Shop Completionist":`${title} ${index+1}`;
+  const description=prefix==="goldvariety"&&index===7?"Max out every Golden Shop upgrade":"Reach "+target.toLocaleString("en-US")+" "+unit;
+  achievements.push(["milestone_"+prefix+"_"+index,distinctTitle,description,()=>prefix==="goldvariety"&&index===7?goldUpgrades.every((level,i)=>level>=goldItems[i][3].length):measure()>=target]);
+ });
+}
+if(achievements.length!==145)throw new Error("Expected 145 base achievements, got "+achievements.length);
+// The hidden-brick series awards at 1, 5, 10, ... 50 unique bricks.
+for(const target of [1,5,10,15,20,25,30,35,40,45,50]){
+ const title=target===50?"Bricked Collector":target===1?"Secret Stud":`Hidden Brick Hunter ${target}`;
+ achievements.push([`secret_bricks_${target}`,title,`Find ${target} of the 50 hidden bricks across the game`,()=>hiddenBrickIds.length>=target]);
+}
+const extraMilestones=[
+ ["rainbow_spawns","Rainbow Explorer","Rainbow Bricks collected",()=>rainbowFound,[1,2,3,5,7,10,15,25]],
+ ["golden_rarities","Golden Rarity Hunter","different Golden Brick rarities collected",()=>goldenRarityCounts.filter(x=>x>0).length,[1,2,3,4,5,5,5,5]],
+ ["rare_gold","Rare Brick Tracker","Rare Golden Bricks collected",()=>goldenRarityCounts[1],[1,2,5,10,20,40,75,150]],
+ ["epic_gold","Epic Brick Tracker","Epic Golden Bricks collected",()=>goldenRarityCounts[2],[1,2,3,5,10,20,40,80]],
+ ["legend_gold","Legendary Brick Tracker","Legendary Golden Bricks collected",()=>goldenRarityCounts[3],[1,2,3,5,8,15,25,50]],
+ ["mythic_gold","Mythic Brick Tracker","Mythic Golden Bricks collected",()=>goldenRarityCounts[4],[1,2,3,4,5,8,12,20]],
+ ["offline_earn","Sleeping Factory","lifetime offline studs",()=>offlineLifetime,[100,1000,10000,100000,1e6,1e7,1e8,1e9]],
+ ["offline_sessions","Welcome Back","offline earning sessions",()=>offlineSessions,[1,2,3,5,10,20,35,50]],
+ ["playtime","Time Traveller","minutes played",()=>Math.floor(playSeconds/60),[1,5,15,30,60,120,300,600]],
+ ["combos","Combo Master","highest combo click streak",()=>bestCombo,[5,10,20,30,40,60,80,100]],
+ ["events","Event Watcher","Golden Bricks collected",()=>goldenCollected,[1,2,3,5,10,20,40,80]],
+ ["skills","Skill Scholar","ascension skills learned",()=>skillOwned.filter(Boolean).length,[1,2,3,4,5,6,7,9]],
+ ["research","Researcher","research upgrades completed",()=>researchOwned.filter(Boolean).length,[1,2,3,4,5,5,5,5]],
+ ["offline_tree","Night Researcher","offline tree upgrades learned",()=>offlineOwned.filter(Boolean).length,[1,2,3,4,5,6,7,8]],
+ ["rainbow_tree","Prismatic Engineer","Rainbow Shop upgrades learned",()=>rainbowOwned.filter(Boolean).length,[1,2,3,4,4,4,4,4]],
+ ["achievement_total","Achievement Hunter","achievements unlocked",()=>unlockedAchievements.length,[25,50,75,100,125,150,200,250]]
+];
+for(const [prefix,title,unit,measure,thresholds] of extraMilestones){
+ thresholds.forEach((target,i)=>{
+  // For capped upgrade/rarity series, the final steps are special mastery challenges.
+  const capped=["golden_rarities","research","rainbow_tree"].includes(prefix)&&i>=5;
+  const description=capped?`Master ${unit}: complete the collection and collect ${i-3} more hidden bricks`:`Reach ${target.toLocaleString("en-US")} ${unit}`;
+  achievements.push([`extra_${prefix}_${i}`,`${title} ${i+1}`,description,()=>measure()>=target&&(!capped||hiddenBrickIds.length>=i-3)]);
+ });
+}
+const secretChallenges=[
+ ["secret_settings_end","The Long Scroll","Find the hidden brick at the very bottom of Settings",()=>secretSettingsReached],
+ ["secret_explorer","Every Corner","Visit every available game tab",()=>secretPageExplorer],
+ ["secret_news","Breaking News","Open the News page",()=>secretNewsVisited],
+ ["secret_skin_swap","Fashion Show","Equip 3 different Stud Skins",()=>secretSkinEquips>=3],
+ ["secret_full_combo","Perfect Rhythm","Reach the maximum 5× click combo",()=>bestCombo>=4000],
+ ["secret_no_click","Hands Off","Earn 100,000 studs in a single run without clicking",()=>bestNoClick>=1e5],
+ ["secret_first_research","Science Fair","Research your first upgrade",()=>researchOwned.some(Boolean)],
+ ["secret_first_offline","Night Owl","Collect your first offline earnings",()=>offlineSessions>=1],
+ ["secret_first_rainbow","Prismatic Surprise","Collect a Rainbow Brick",()=>rainbowFound>=1],
+ ["secret_skill_master","Skill Master","Unlock all Ascension Skill Tree nodes",()=>skillOwned.every(Boolean)],
+ ["secret_offline_master","Sleeping Genius","Complete the Offline Upgrade Tree",()=>offlineOwned.every(Boolean)]
+];
+achievements.push(...secretChallenges);
+// Five additional challenge achievements, each combining distinct gameplay systems.
+achievements.push(
+ ["challenge_secret_scientist","Secret Scientist","Discover 10 hidden bricks and complete every Research Lab upgrade",()=>hiddenBrickIds.length>=10&&researchOwned.every(Boolean)],
+ ["challenge_rainbow_hunter","Prismatic Collector","Find a Rainbow Brick and collect 25 hidden bricks",()=>rainbowFound>=1&&hiddenBrickIds.length>=25],
+ ["challenge_night_engineer","Night Engineer","Earn 1 million lifetime offline studs and complete the Offline Upgrade Tree",()=>offlineLifetime>=1e6&&offlineOwned.every(Boolean)],
+ ["challenge_combo_explorer","Rhythm Explorer","Reach the 5× click combo and discover 15 hidden bricks",()=>bestCombo>=4000&&hiddenBrickIds.length>=15],
+ ["challenge_ultimate_collector","Ultimate Brick Collector","Find all 50 hidden bricks and collect every Golden Brick rarity",()=>hiddenBrickIds.length>=50&&goldenRarityCounts.every(n=>n>0)]
+);
+if(achievements.length!==300)throw new Error("Expected 300 achievements, got "+achievements.length);
+// Expansion pack: 150 more achievements (450 total). Existing IDs remain stable.
+// Each series has ten independently tracked goals, including crossover challenges.
+const expansionTracks=[
+ ['stud_marathon','Stud Marathon','lifetime studs earned',()=>lifetimeStuds,[1e6,1e9,1e12,1e15,1e18,1e21,1e24,1e27,1e30,1e33]],
+ ['run_legend','Run Legend','studs earned in a single run',()=>bestRun,[1e5,1e6,1e7,1e8,1e9,1e10,1e11,1e12,1e13,1e14]],
+ ['silent_factory','Silent Factory','studs earned in one no-click run',()=>bestNoClick,[1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e11,1e12]],
+ ['tap_odyssey','Tap Odyssey','lifetime clicks',()=>clicks,[100,300,750,1500,3000,6000,12000,25000,50000,100000]],
+ ['combo_endurance','Combo Endurance','best uninterrupted click streak',()=>bestCombo,[125,250,400,600,800,1000,1500,2000,3000,4000]],
+ ['industrial_revolution','Industrial Revolution','highest studs per second',()=>highestSps,[100,1000,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e12]],
+ ['click_artisan','Click Artisan','highest studs per click',()=>highestClick,[10,100,1000,1e4,1e5,1e6,1e7,1e8,1e9,1e10]],
+ ['ascension_voyage','Ascension Voyage','total ascensions',()=>ascensions,[10,25,50,75,100,150,200,300,500,1000]],
+ ['builders_guild','Builders Guild','LEGO Shop upgrades purchased',()=>upgradesPurchased,[20,50,100,200,400,750,1000,2000,4000,10000]],
+ ['golden_expedition','Golden Expedition','Golden Bricks collected',()=>goldenCollected,[10,25,50,100,200,350,500,750,1000,2000]],
+ ['prism_chaser','Prism Chaser','Rainbow Bricks collected',()=>rainbowFound,[1,2,3,5,8,12,20,30,50,75]],
+ ['night_shift','Night Shift','lifetime offline studs',()=>offlineLifetime,[1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e11,1e12]],
+ ['event_veteran','Golden Veteran','Golden Bricks collected',()=>goldenCollected,[3,5,10,20,35,50,75,100,150,250]],
+ ['secret_cartographer','Secret Cartographer','hidden bricks discovered',()=>hiddenBrickIds.length,[2,4,6,8,12,16,22,30,40,50]],
+ ['mastery_mix','Mastery Mix','combined research, skill, offline and Rainbow upgrades',()=>researchOwned.filter(Boolean).length+skillOwned.filter(Boolean).length+offlineOwned.filter(Boolean).length+rainbowOwned.filter(Boolean).length,[2,4,6,8,10,13,16,20,23,26]]
+];
+for(const [key,name,unit,measure,targets] of expansionTracks){
+ targets.forEach((target,i)=>{
+  const title=`${name} ${String(i+1).padStart(2,'0')}`;
+  let description=`Reach ${target.toLocaleString('en-US')} ${unit}`;
+  // Later secret and mastery achievements combine mechanics for extra difficulty.
+  const cross=key==='secret_cartographer'&&i>=5;
+  if(cross)description+=` and witness ${[5,10,20,30,50][i-5]} Golden Bricks`;
+  const mastery=key==='mastery_mix'&&i>=6;
+  if(mastery)description+=` and collect ${[1,2,3,5][i-6]} Rainbow Bricks`;
+  achievements.push([`exp_${key}_${i}`,title,description,()=>measure()>=target&&(!cross||goldenCollected>=[5,10,20,30,50][i-5])&&(!mastery||rainbowFound>=[1,2,3,5][i-6])]);
+ });
+}
+if(achievements.length!==450)throw new Error('Expected 450 achievements, got '+achievements.length);
+// 50 individually named achievements: no numbered title repeats.
+const uniqueAchievementPack=[
+ ['unique_1','First Spark','Earn 500 lifetime studs',()=>lifetimeStuds>=500],
+ ['unique_2','Pocketful of Studs','Earn 25,000 lifetime studs',()=>lifetimeStuds>=25000],
+ ['unique_3','Stud Avalanche','Earn 5 million lifetime studs',()=>lifetimeStuds>=5e6],
+ ['unique_4','Golden Horizon','Earn 250 million lifetime studs',()=>lifetimeStuds>=2.5e8],
+ ['unique_5','Infinite Blueprint','Earn 5 trillion lifetime studs',()=>lifetimeStuds>=5e12],
+ ['unique_6','Fresh Foundations','Earn 2,500 studs in a single run',()=>bestRun>=2500],
+ ['unique_7','Castle in a Day','Earn 250,000 studs in a single run',()=>bestRun>=250000],
+ ['unique_8','One Run Wonder','Earn 25 million studs in a single run',()=>bestRun>=2.5e7],
+ ['unique_9','Quiet Ambition','Earn 5,000 studs in a no-click run',()=>bestNoClick>=5000],
+ ['unique_10','Silent Empire','Earn 50 million studs in a no-click run',()=>bestNoClick>=5e7],
+ ['unique_11','Tap Apprentice','Click 75 times in total',()=>clicks>=75],
+ ['unique_12','Button Veteran','Click 2,500 times in total',()=>clicks>=2500],
+ ['unique_13','Endless Fingers','Click 20,000 times in total',()=>clicks>=20000],
+ ['unique_14','Rhythm Rookie','Reach a 50-click combo',()=>bestCombo>=50],
+ ['unique_15','Unbroken Rhythm','Reach a 750-click combo',()=>bestCombo>=750],
+ ['unique_16','Marathon Fingers','Reach a 2,500-click combo',()=>bestCombo>=2500],
+ ['unique_17','Little Workshop','Reach 25 studs per second',()=>highestSps>=25],
+ ['unique_18','Growing Assembly','Reach 2,500 studs per second',()=>highestSps>=2500],
+ ['unique_19','Powerhouse Protocol','Reach 250,000 studs per second',()=>highestSps>=250000],
+ ['unique_20','Factory of Tomorrow','Reach 250 million studs per second',()=>highestSps>=2.5e8],
+ ['unique_21','Click Precision','Reach 25 studs per click',()=>highestClick>=25],
+ ['unique_22','Heavy Hand','Reach 2,500 studs per click',()=>highestClick>=2500],
+ ['unique_23','Meteoric Tap','Reach 250,000 studs per click',()=>highestClick>=250000],
+ ['unique_24','First Flight','Ascend 3 times',()=>ascensions>=3],
+ ['unique_25','Skyward Builder','Ascend 12 times',()=>ascensions>=12],
+ ['unique_26','Beyond the Clouds','Ascend 60 times',()=>ascensions>=60],
+ ['unique_27','Stellar Architect','Ascend 250 times',()=>ascensions>=250],
+ ['unique_28','Upgrade Collector','Buy 15 LEGO Shop upgrades',()=>upgradesPurchased>=15],
+ ['unique_29','Workshop Regular','Buy 75 LEGO Shop upgrades',()=>upgradesPurchased>=75],
+ ['unique_30','Blueprint Hoarder','Buy 500 LEGO Shop upgrades',()=>upgradesPurchased>=500],
+ ['unique_31','Glimmer Hunter','Collect 3 Golden Bricks',()=>goldenCollected>=3],
+ ['unique_32','Shimmer Seeker','Collect 18 Golden Bricks',()=>goldenCollected>=18],
+ ['unique_33','Sunlit Treasure','Collect 125 Golden Bricks',()=>goldenCollected>=125],
+ ['unique_34','Prism Witness','Collect your first Rainbow Brick',()=>rainbowFound>=1],
+ ['unique_35','Prismatic Trail','Collect 4 Rainbow Bricks',()=>rainbowFound>=4],
+ ['unique_36','Spectrum Guardian','Collect 15 Rainbow Bricks',()=>rainbowFound>=15],
+ ['unique_37','Hidden Footprint','Find 3 hidden bricks',()=>hiddenBrickIds.length>=3],
+ ['unique_38','Secret Passage','Find 13 hidden bricks',()=>hiddenBrickIds.length>=13],
+ ['unique_39','Behind the Panels','Find 28 hidden bricks',()=>hiddenBrickIds.length>=28],
+ ['unique_40','Master of Disguise','Find 43 hidden bricks',()=>hiddenBrickIds.length>=43],
+ ['unique_41','Golden Watcher','Collect 2 Golden Bricks',()=>goldenCollected>=2],
+ ['unique_42','Golden Enthusiast','Collect 12 Golden Bricks',()=>goldenCollected>=12],
+ ['unique_43','Golden Storm Chaser','Collect 65 Golden Bricks',()=>goldenCollected>=65],
+ ['unique_44','Sleeping Workshop','Earn 2,500 lifetime offline studs',()=>offlineLifetime>=2500],
+ ['unique_45','Moonlit Production','Earn 250,000 lifetime offline studs',()=>offlineLifetime>=250000],
+ ['unique_46','Dream Factory','Earn 25 million lifetime offline studs',()=>offlineLifetime>=2.5e7],
+ ['unique_47','Curious Researcher','Purchase 2 Research Lab upgrades',()=>researchOwned.filter(Boolean).length>=2],
+ ['unique_48','Skillful Thinker','Unlock 3 Ascension Skill Tree upgrades',()=>skillOwned.filter(Boolean).length>=3],
+ ['unique_49','Restful Engineer','Purchase 3 Offline Lab upgrades',()=>offlineOwned.filter(Boolean).length>=3],
+ ['unique_50','Rainbow Scholar','Purchase 2 Rainbow upgrades',()=>rainbowOwned.filter(Boolean).length>=2]
+];
+achievements.push(...uniqueAchievementPack);
+// Descriptive achievement titles replace numbered sequel names without changing IDs,
+// unlock requirements, rarities, saved progress, or the 500-achievement total.
+const achievementTitleThemes = {"studs": "Stud Treasury", "taps": "Tap Rhythm", "purchases": "Workshop Shopper", "production": "Factory Engine", "clickpower": "Power Tap", "rebirth": "Skyward Journey", "goldbricks": "Golden Discovery", "frenzies": "Frenzy Rush", "autolifetime": "Automaton Empire", "handsfree": "Silent Builder", "runstuds": "Single Run", "owned": "Upgrade Collection", "goldlevels": "Golden Engineering", "goldvariety": "Golden Arsenal", "rainbow_spawns": "Rainbow Trail", "golden_rarities": "Golden Spectrum", "rare_gold": "Rare Gold", "epic_gold": "Epic Gold", "legend_gold": "Legendary Gold", "mythic_gold": "Mythic Gold", "offline_earn": "Sleeping Factory", "offline_sessions": "Return Journey", "playtime": "Time Traveller", "combos": "Combo Rhythm", "events": "Golden Reinforcements", "skills": "Skill Tree", "research": "Research Lab", "offline_tree": "Night Lab", "rainbow_tree": "Prismatic Workshop", "achievement_total": "Trophy Cabinet", "stud_marathon": "Stud Marathon", "run_legend": "Run Legend", "silent_factory": "Silent Factory", "tap_odyssey": "Tap Odyssey", "combo_endurance": "Combo Endurance", "industrial_revolution": "Industrial Revolution", "click_artisan": "Click Artisan", "ascension_voyage": "Ascension Voyage", "builders_guild": "Builders Guild", "golden_expedition": "Golden Expedition", "prism_chaser": "Prism Chaser", "night_shift": "Night Shift", "event_veteran": "Golden Veteran", "secret_cartographer": "Secret Cartographer", "mastery_mix": "Mastery Mix"};
+const achievementTitleStages = ["First Spark", "Gathering Momentum", "Finding Your Stride", "Into Overdrive", "Breaking Boundaries", "Uncharted Heights", "Masterful Precision", "Legendary Territory", "Beyond Imagination", "The Final Frontier"];
+const achievementTitlePhrases = {"studs": ["Pocket Change", "First Savings", "Stud Windfall", "Vault of Plenty", "Golden Fortune", "Treasury Overflow", "Astral Riches", "Infinite Fortune"], "taps": ["Gentle Tap", "Quick Fingers", "Steady Hands", "Button Habit", "Finger Workout", "Rapid Fire", "Relentless Tapping", "Never-Ending Clicks"], "purchases": ["Window Shopping", "First Haul", "Cart Full", "Bulk Buyer", "Stockroom Regular", "Upgrade Investor", "Shopping Tycoon", "Empty the Shelves"], "production": ["Engine Ignition", "Conveyor Online", "Workshop Hum", "Industrial Pulse", "Factory Surge", "Assembly Empire", "Megafactory", "Cosmic Assembly"], "clickpower": ["Heavy Finger", "Reinforced Tap", "Power Press", "Thunderous Touch", "Stud Hammer", "Titan Finger", "Meteor Strike", "Planet Cracker"], "rebirth": ["Second Sunrise", "Third Flight", "Cloud Hopper", "Ascendant Apprentice", "Skybound Veteran", "Stellar Return", "Eternal Flight", "Above the Stars"], "goldbricks": ["First Glimmer", "Second Shine", "Golden Glance", "Treasure Trail", "Gold Rush", "Golden Cache", "Sunlit Hoard", "Gilded Empire"], "frenzies": ["Spark of Frenzy", "Double Rush", "Triple Surge", "Frenzy Fever", "Golden Adrenaline", "Unstoppable Rush", "Frenzy Veteran", "Storm of Frenzies"], "autolifetime": ["First Automated Stud", "Robot Helper", "Machine Routine", "Autonomous Workshop", "Mechanical Wealth", "Robot Treasury", "Clockwork Empire", "Automated Universe"], "handsfree": ["Hands in Pockets", "Quiet Start", "Patient Builder", "Idle Fortune", "Untouched Treasure", "Silent Millionaire", "Unclicked Empire", "Stillness Supreme"], "runstuds": ["Small Beginnings", "Single-Run Savings", "One-Run Windfall", "Runaway Riches", "One-Run Fortune", "Single-Run Empire", "Legendary Session", "Run of a Lifetime"], "owned": ["First Collection", "Growing Toolbox", "Upgrade Shelf", "Packed Workshop", "Crowded Factory", "Blueprint Library", "Equipment Empire", "Collector Supreme"], "goldlevels": ["First Golden Tweak", "Gilded Mechanic", "Golden Workshop", "Shining Components", "Gold-Plated Machinery", "Golden Expert", "Gilded Mastery", "Clockwork Gold"], "goldvariety": ["First Golden Trick", "Golden Toolkit", "Third Golden Secret", "Golden Options", "Gilded Variety", "Golden Connoisseur", "Golden Specialist", "Golden Shop Completionist"], "rainbow_spawns": ["First Rainbow", "Second Spectrum", "Third Prism", "Colour Collector", "Prismatic Seeker", "Rainbow Regular", "Spectrum Hunter", "Prism Veteran"], "golden_rarities": ["First Gold Hue", "Beyond Common", "Rarity Explorer", "Almost a Full Set", "Complete Golden Spectrum", "Rarity Archivist", "Gilded Curator", "Golden Rarity Master"], "rare_gold": ["Rare First Sight", "Rare Repeat", "Rare Treasure", "Rare Collector", "Rare Hoard", "Rare Specialist", "Rare Connoisseur", "Rare Legend"], "epic_gold": ["Epic Discovery", "Epic Echo", "Epic Trio", "Epic Gathering", "Epic Treasury", "Epic Hunter", "Epic Collector", "Epic Legend"], "legend_gold": ["Legendary Sighting", "Legendary Return", "Legendary Trio", "Legendary Streak", "Legendary Cache", "Legendary Pursuit", "Legendary Vault", "Legendary Legacy"], "mythic_gold": ["Mythic Encounter", "Mythic Return", "Mythic Trio", "Mythic Quartet", "Mythic Collection", "Mythic Pursuit", "Mythic Vault", "Mythic Legacy"], "offline_earn": ["Sleepy Savings", "Nighttime Studs", "Midnight Workshop", "Sleeping Fortune", "Dream Assembly", "Night Shift Wealth", "Slumbering Empire", "Dreamland Treasury"], "offline_sessions": ["Welcome Home", "Second Homecoming", "Regular Visitor", "Frequent Return", "Clocking Back In", "Night Shift Regular", "Return Veteran", "Always Returning"], "playtime": ["First Minute", "Five-Minute Builder", "Quarter-Hour Crafter", "Half-Hour Workshop", "Hour of Power", "Dedicated Builder", "Time Investor", "Marathon Session"], "combos": ["First Combo", "Steady Rhythm", "Combo Spark", "Rhythm Builder", "Combo Momentum", "Finger Tempo", "Unbroken Beat", "Perfect Cadence"], "events": ["First Golden Glimpse", "Golden Encore", "Golden Regular", "Lucky Gold", "Gilded Observer", "Golden Tracker", "Golden Collector", "Golden Veteran"], "skills": ["First Lesson", "Skill Apprentice", "Branch Explorer", "Growing Expertise", "Talent Collector", "Skill Specialist", "Skill Veteran", "Skill Tree Master"], "research": ["First Discovery", "Second Hypothesis", "Third Experiment", "Lab Breakthrough", "Research Completion", "Lab Specialist", "Science Veteran", "Ultimate Researcher"], "offline_tree": ["Night School", "After-Hours Lesson", "Moonlight Study", "Night Shift Scholar", "Dream Researcher", "Midnight Specialist", "Sleeping Savant", "Night Lab Master"], "rainbow_tree": ["First Prism Upgrade", "Colour Theory", "Spectrum Craft", "Rainbow Completion", "Prismatic Scholar", "Spectrum Specialist", "Rainbow Artisan", "Prismatic Master"], "achievement_total": ["First Trophy Shelf", "Trophy Collector", "Bronze Trophy Hall", "Silver Trophy Hall", "Golden Trophy Hall", "Champion Gallery", "Achievement Archivist", "Trophy Legend"]};
+const achievementExpansionStages = ["The Awakening", "The First Leap", "Building Momentum", "A New Horizon", "Into the Unknown", "The Great Ascent", "Master of the Craft", "The Legendary Path", "Beyond the Limits", "The Ultimate Legacy"];
+for (const achievement of achievements) {
+ const id=achievement[0];
+ let match=id.match(/^milestone_(.+)_(\d+)$/);
+ if(match){const key=match[1],i=Number(match[2]);
+  achievement[1]=(achievementTitlePhrases[key]||[])[i] || (achievementTitleThemes[key]+' — '+achievementTitleStages[i]);
+  continue;
+ }
+ match=id.match(/^extra_(.+)_(\d+)$/);
+ if(match){const key=match[1],i=Number(match[2]);
+  achievement[1]=(achievementTitlePhrases[key]||[])[i] || (achievementTitleThemes[key]+' — '+achievementTitleStages[i]);
+  continue;
+ }
+ match=id.match(/^exp_(.+)_(\d+)$/);
+ if(match){const key=match[1],i=Number(match[2]);
+  achievement[1]=achievementTitleThemes[key]+' — '+achievementExpansionStages[i];
+  continue;
+ }
+ match=id.match(/^secret_bricks_(\d+)$/);
+ if(match){const titles={1:'Secret Stud',5:'Hidden Footprints',10:'Whispers in the Walls',15:'The Secret Trail',20:'Brick by Brick',25:'Half the Mystery',30:'Hidden Horizons',35:'The Secret Archive',40:'Nearly Uncovered',45:'Last Hidden Clues',50:'Bricked Collector'};achievement[1]=titles[Number(match[1])];}
+}
+
+if(achievements.length!==500)throw new Error("Expected 500 achievements, got "+achievements.length);
+
+// v1.40 rare-brick achievements (stable IDs; added to existing 500).
+const rareBrickAchievements=[
+ ['rare_update_first_rainbow','Spectrum Sighting','Collect your first Rainbow Brick',()=>rainbowFound>=1],
+ ['rare_update_rainbow_10','Tenfold Spectrum','Collect 10 Rainbow Bricks',()=>rainbowFound>=10],
+ ['rare_update_rainbow_50','Prismatic Dynasty','Collect 50 Rainbow Bricks',()=>rainbowFound>=50],
+ ['rare_update_rainbow_luck_1','A Glimmer of Luck','Purchase your first Rainbow Luck level',()=>rainbowLuckLevel>=1],
+ ['rare_update_rainbow_luck_5','Probability Architect','Reach Rainbow Luck level 5',()=>rainbowLuckLevel>=5],
+ ['rare_update_rainbow_luck_10','Ten Thousand to Two Thousand','Max out Rainbow Luck',()=>rainbowLuckLevel>=10],
+ ['rare_update_reinforcement_1','Unexpected Backup','Trigger a Golden Brick reinforcement',()=>reinforcementCount>=1],
+ ['rare_update_reinforcement_5','Golden Echoes','Trigger five Golden Brick reinforcements',()=>reinforcementCount>=5],
+ ['rare_update_reinforcement_25','Reinforcement Commander','Trigger 25 Golden Brick reinforcements',()=>reinforcementCount>=25],
+ ['rare_update_all_rarities_2','Five Golden Pairs','Collect two Golden Bricks of every rarity in one Burn cycle',()=>burnRarityCounts.every(n=>n>=2)],
+ ['rare_update_prismatic_pairs','The Complete Spectrum','Collect two of every Golden Brick rarity and two Rainbow Bricks in one Burn cycle',()=>burnRarityCounts.every(n=>n>=2)&&burnFeats.rainbowsThisCycle>=2],
+ ['rare_update_rainbow_shards','First Rainbow Shard','Collect a Rainbow Brick worth one Rainbow Shard',()=>rainbowFound>=1]
+];
+for(const achievement of rareBrickAchievements)achievements.push(achievement);
+// Categories and rarity are derived from stable achievement IDs, so older saves remain valid.
+const rarityInfo={Common:1,Uncommon:2,Rare:3,Epic:5,Legendary:8,Mythic:12};
+const superIds=new Set([
+ ...achievements.filter(a=>a[0].startsWith('challenge_')||a[0]==='secret_bricks_50'||a[0]==='secret_settings_end'||a[0]==='secret_full_combo'||a[0]==='secret_skill_master'||a[0]==='secret_offline_master').map(a=>a[0]),
+ ...achievements.filter(a=>/^extra_(mythic_gold|legend_gold|rainbow_spawns|offline_earn|offline_tree|rainbow_tree|research|skills|combos|playtime|achievement_total)_/.test(a[0])).filter(a=>Number(a[0].split('_').at(-1))>=5).map(a=>a[0]),
+ ...achievements.filter(a=>/^milestone_(studs|production|handsfree|runstuds|clickpower|rebirth|goldbricks|autolifetime|goldlevels)_/.test(a[0])).filter(a=>Number(a[0].split('_').at(-1))>=6).map(a=>a[0])
+]);
+// v1.42 achievements: high-end lifetime milestones, Rainbow Rave and cosmetics.
+const cosmicAchievementNames=["Astral Savings","Stellar Fortune","Nebula Treasury","Galactic Mint","Universe of Studs","Cosmic Inheritance","Beyond the Multiverse","Reality Billionaire","Infinite Ledger","Transcendent Wealth","The Final Treasury","Vigintillion Vision"];
+const cosmicAchievementTargets=[1e18,1e21,1e24,1e27,1e30,1e33,1e36,1e39,1e42,1e48,1e54,1e63];
+cosmicAchievementTargets.forEach((target,i)=>achievements.push(["cosmic_lifetime_"+i,cosmicAchievementNames[i],"Earn "+fmt(target)+" lifetime studs",()=>lifetimeStuds>=target]));
+[
+ ["rave_first","The Rave Begins","Collect your first Rainbow Brick",()=>rainbowFound>=1],
+ ["rave_power","Prismatic Powerhouse","Trigger five Rainbow Brick buffs",()=>rainbowBuffCount>=5],
+ ["rave_veteran","Chromatic Thunder","Trigger 25 Rainbow Brick buffs",()=>rainbowBuffCount>=25],
+ ["rave_luck_three","Chasing Colours","Reach Rainbow Luck level 3",()=>rainbowLuckLevel>=3],
+ ["rave_luck_seven","Odds Defier","Reach Rainbow Luck level 7",()=>rainbowLuckLevel>=7],
+ ["rave_luck_max","Probability Breaker","Max out Rainbow Luck",()=>rainbowLuckLevel>=10],
+ ["cosmetic_first","A Touch of Style","Purchase your first hat",()=>ownedHats.length>=2],
+ ["cosmetic_tophat","Properly Dressed","Own the Top Hat",()=>ownedHats.includes("top_hat")],
+ ["cosmetic_five","Hat Collector","Own five hats",()=>ownedHats.length>=6],
+ ["cosmetic_all","Cosmic Couture","Own every hat",()=>ownedHats.length>=hats.length],
+ ["cosmic_gateway","Beyond the Brickverse","Purchase the Vigintillion Gateway",()=>owned[normal.length-1-beyondUpgrades.length]>=1],
+ ["cosmic_builder","Architect of Infinity","Own every LEGO Shop upgrade at least once",()=>owned.every(n=>n>=1)]
+].forEach(a=>achievements.push(a));
+// Only remove achievements genuinely based on the retired random special events.
+for(let i=achievements.length-1;i>=0;i--){const a=achievements[i];if(/special event|stud rain|click carnival|factory festival/i.test(a[1]+" "+a[2])||/^event_(rain|click|factory)/.test(a[0]))achievements.splice(i,1);}
+// Exactly 50 exceptionally difficult achievements receive the Super Stud category.
+// v1.45: unique lifetime achievements for the full range of finite number suffixes.
+// Stable IDs ensure old unlocked achievements survive imports and burns.
+const beyondLifetimeAchievements=[
+ [66,"The Uncharted Ledger"],[69,"Astral Counting House"],[72,"Treasury Beyond Time"],
+ [75,"Studs Without Borders"],[78,"The Celestial Balance"],[81,"Hypernova Holdings"],
+ [84,"Pillars of Plenty"],[87,"The Golden Continuum"],[90,"Galactic Arithmetic"],
+ [93,"Thirty Worlds of Wealth"],[99,"The Endless Assembly"],[105,"The Infinite Mint"],
+ [111,"The Number Nebula"],[117,"The Grand Tally"],[123,"Fortyfold Fortune"],
+ [132,"The Boundless Blueprint"],[141,"Luminous Ledgers"],[150,"The Cosmic Reserve"],
+ [153,"Fifty Horizons"],[162,"Eternity's Accountant"],[171,"The Immutable Treasury"],
+ [180,"A Universe of Zeroes"],[183,"Sixtyfold Fortune"],[192,"The Seventh-Dimension Vault"],
+ [201,"The Comet Treasury"],[210,"The Endless Expanse"],[213,"Seventy Steps Beyond"],
+ [222,"The Starfield Bank"],[231,"The Quantum Reserve"],[240,"The Final Frontier Vault"],
+ [243,"Eightyfold Earnings"],[252,"A Hundred Skies"],[261,"The Infinite Accumulator"],
+ [270,"The Last Counting Star"],[273,"Ninety Worlds of Studs"],[282,"The Black Hole Treasury"],
+ [291,"Architect of Eternity"],[300,"The Ultimate Tally"],
+ [303,"Centillion Conqueror"],[306,"Uncentillion Unbound"]
+];
+for(const [power,name] of beyondLifetimeAchievements){
+ const target=Math.pow(10,power);
+ achievements.push(["beyond_lifetime_"+power,name,"Earn "+fmt(target)+" lifetime studs",()=>lifetimeStuds>=target]);
+}
+const superPriority=achievements.filter(a=>superIds.has(a[0])).map(a=>a[0]);
+const extraSuper=achievements.filter(a=>!superIds.has(a[0])&&(/^(extra_|milestone_)/.test(a[0]))).sort((a,b)=>{
+ const ai=Number(a[0].split('_').at(-1))||0,bi=Number(b[0].split('_').at(-1))||0;
+ return bi-ai;
+}).map(a=>a[0]);
+const superStudIds=new Set([...superPriority,...extraSuper].slice(0,50));
+function achievementCategory(id){
+ if(superStudIds.has(id))return 'Super Stud';
+ if(id.startsWith('exp_secret_cartographer'))return 'Secrets & Challenges';
+ if(id.startsWith('exp_mastery_mix')||id.startsWith('exp_builders_guild'))return 'Upgrades & Research';
+ if(id.startsWith('exp_night_shift'))return 'Offline';
+ if(id.startsWith('exp_ascension_voyage'))return 'Ascension';
+ if(id.startsWith('exp_tap_odyssey')||id.startsWith('exp_combo_endurance')||id.startsWith('exp_click_artisan'))return 'Clicking & Combos';
+ if(id.startsWith('exp_golden_expedition')||id.startsWith('exp_prism_chaser'))return 'Golden & Rainbow';
+ if(id.startsWith('exp_event_veteran'))return 'Golden Bricks';
+ if(id.startsWith('secret_')||id.startsWith('challenge_'))return 'Secrets & Challenges';
+ if(id.includes('rainbow')||id.includes('gold')||id.includes('frenzy'))return 'Golden & Rainbow';
+ if(id.includes('offline')||id.includes('night')||id.includes('sleep'))return 'Offline';
+ if(id.includes('ascend')||id.includes('rebirth')||id.includes('permanent')||id.includes('skills'))return 'Ascension';
+ if(id.includes('combo')||id.includes('click')||id.includes('taps'))return 'Clicking & Combos';
+ if(id.includes('research')||id.includes('upgrade')||id.includes('purchases')||id.includes('owned'))return 'Upgrades & Research';
+ if(id.includes('achievement')||id.includes('playtime')||id.includes('events'))return 'Golden Bricks';
+ return 'Studs & Production';
+}
+function achievementRarity(id){
+ if(id.startsWith('beyond_lifetime_')){const p=Number(id.split('_').at(-1));return p>=183?'Mythic':p>=93?'Legendary':'Epic';}
+ if(superStudIds.has(id))return id.startsWith('challenge_')||id==='secret_bricks_50'?'Mythic':'Legendary';
+ const index=Number(id.split('_').at(-1));
+ if(id.startsWith('exp_'))return index>=9?'Mythic':index>=7?'Legendary':index>=5?'Epic':index>=3?'Rare':index>=1?'Uncommon':'Common';
+ if(id.startsWith('secret_'))return 'Epic';
+ if(id.startsWith('extra_')||id.startsWith('milestone_'))return index>=6?'Epic':index>=4?'Rare':index>=2?'Uncommon':'Common';
+ return ['noClickBillion','quadrillion','autoBillion','permanent12'].includes(id)?'Legendary':['noClickMillion','trillion','ascend25','gold50'].includes(id)?'Epic':'Common';
+}
+const achievementPoints=()=>unlockedAchievements.reduce((sum,id)=>sum+(rarityInfo[achievementRarity(id)]||1),0);
+const achievementBonusLevels=()=>Math.floor(achievementPoints()/10);
+// A bonus is granted only for *claimed* ascensions, not for ready milestones.
+// Claimed 0 = 1×, claimed 1 = 2×, claimed 2 = 3×, and so on.
+const ascensionFactor=()=>1+ascensions;
+const multiplier=()=>ascensionFactor()*Math.pow(1.02,achievementBonusLevels())*(1+Math.floor(hiddenBrickIds.length/5)*0.01);
+// The price growth factor starts at 1.25x and increases by 0.1x per tier.
+// Cache milestone prices to avoid recalculating the entire product for each progress-bar update.
+const ascensionPrices=[10000];
+function ascensionCost(tier=ascensions){
+ tier=Math.max(0,Math.floor(Number(tier)||0));
+ if(tier>100000)return Infinity;
+ while(ascensionPrices.length<=tier){
+  const previousTier=ascensionPrices.length-1;
+  const next=Math.ceil(ascensionPrices[previousTier]*(1.25+previousTier*0.1));
+  ascensionPrices.push(Number.isFinite(next)?next:Infinity);
+  if(!Number.isFinite(next))break;
+ }
+ return ascensionPrices[tier]??Infinity;
+}
+// Ascension milestones are earned from cumulative studs, not current wallet balance.
+// Already-claimed tiers consume lifetime progress, leaving a fresh progress bar.
+function ascensionMilestones(){
+ let earned=Math.max(0,lifetimeStuds-ascensionLifetimeBaseline),used=0;
+ for(let i=0;i<ascensions;i++){
+  const cost=ascensionCost(i);
+  if(!Number.isFinite(cost))break;
+  used+=cost;
+ }
+ let remaining=Math.max(0,earned-used),count=0,spent=0;
+ while(count<100000){
+  const price=ascensionCost(ascensions+count);
+  if(!Number.isFinite(price)||remaining<price)break;
+  remaining-=price;spent+=price;count++;
+ }
+ return {count,spent,remaining,nextCost:ascensionCost(ascensions+count),earned};
+}
+const affordableAscensions=ascensionMilestones;
+const frenzyMultiplier=()=>Date.now()<frenzyUntil?frenzyStrength():1;
+const clickStormMultiplier=()=>Date.now()<clickStormUntil?5:1;
+const overdriveMultiplier=()=>Date.now()<overdriveUntil?4:1;
+const discount=()=> (permanent[2]?0.9:1)*(permanent[9]?0.85:1);
+const clickPower=()=>finiteCap(rainbowClickBoost()*comboMultiplier()*researchClick()*researchAll()*rainbowClick()*rainbowAll()*multiplier()*skillAll()*skillClick()*eventAll()*eventClick()*frenzyMultiplier()*clickStormMultiplier()*goldProduction()*
+(permanent[0]?2:1)*(permanent[3]?3:1)*(permanent[5]?2:1)*
+(permanent[6]?3:1)*(permanent[7]?5:1)*(permanent[10]?5:1)*
+(permanent[11]?10:1)*(1+owned[0])*endgameClickBoost());
+const autoPower=()=>rainbowAutoBoost()*researchAuto()*researchAll()*rainbowAuto()*rainbowAll()*multiplier()*skillAll()*skillAuto()*eventAll()*eventAuto()*frenzyMultiplier()*overdriveMultiplier()*goldProduction()*
+(permanent[1]?2:1)*(permanent[4]?3:1)*(permanent[5]?2:1)*
+(permanent[6]?3:1)*(permanent[8]?5:1)*(permanent[10]?5:1)*
+(permanent[11]?10:1)*endgameAutoBoost();
+const finiteCap=n=>Number.isNaN(n)?0:Math.min(Number.MAX_VALUE,Math.max(0,n));
+const safeSum=(a,b)=>finiteCap(a+b);
+const sps=()=>finiteCap(autoPower()*normal.reduce((sum,item,i)=>safeSum(sum,i===0?0:owned[i]*item[4]),0));
+const cost=i=>Math.ceil(normal[i][3]*(i<2?0.5:1)*discount()*Math.pow(1.85,owned[i]));
+function scheduleGolden(){nextGoldenSpawnAt=Date.now()+goldSpawnDelay();}
+function placeGolden(randomize=true){
+const brick=$("golden");
+const w=brick.offsetWidth||240,h=brick.offsetHeight||65;
+const margin=12;
+const maxX=Math.max(margin,window.innerWidth-w-margin);
+const maxY=Math.max(margin,window.innerHeight-h-margin);
+if(randomize){goldenX=margin+Math.random()*(maxX-margin);goldenY=margin+Math.random()*(maxY-margin);}
+goldenX=Math.max(margin,Math.min(goldenX,maxX));
+goldenY=Math.max(margin,Math.min(goldenY,maxY));
+brick.style.left=goldenX+"px";brick.style.top=goldenY+"px";
+}
+function spawnGolden(now=Date.now(),isReinforcement=false){
+if(goldenVisible){goldenVisible=false;$("golden").style.display="none";}
+if(rainbowVisible)endRainbow();
+if(!isReinforcement)brickSpawnCount++;
+// Each scheduled brick spawn independently rolls Rainbow Luck (1/10000 through 1/2000).
+if(!isReinforcement&&Math.random()<1/rainbowSpawnDenominator()){spawnRainbow(now);scheduleGolden();return;}
+
+const roll=Math.random()*100;let cumulative=0;currentRarity=0;
+for(let i=0;i<rarities.length;i++){cumulative+=rarities[i].weight;if(roll<cumulative){currentRarity=i;break;}}
+const rarity=rarities[currentRarity];$("golden").textContent=rarity.icon+" "+rarity.name.toUpperCase()+" GOLDEN BRICK!";$("golden").style.setProperty("--rarity",rarity.color);
+goldenVisible=true;goldenExpiresAt=now+brickVisibleDuration();
+if(!isReinforcement)scheduleGolden(); // Reinforcements do not reset the next scheduled spawn.
+$("golden").classList.remove("brick-fading","brick-appearing");
+$("golden").style.display="block";
+void $("golden").offsetWidth;$("golden").classList.add("brick-appearing");
+placeGolden(true);
+}
+function expireGolden(){
+goldenVisible=false;goldenExpiresAt=0;
+$("golden").style.display="none";
+saveGame();
+}
+window.addEventListener("resize",()=>{if(goldenVisible)placeGolden(false);});
+const achievementToastQueue=[];
+let achievementToastBusy=false;
+function queueAchievementToast(id,name,description){
+ achievementToastQueue.push({id,name,description});
+ showNextAchievementToast();
+}
+function showNextAchievementToast(){
+ if(achievementToastBusy||!achievementToastQueue.length)return;
+ const stack=document.getElementById('achievementToastStack');
+ if(!stack)return;
+ achievementToastBusy=true;
+ const item=achievementToastQueue.shift(),rarity=achievementRarity(item.id),category=achievementCategory(item.id);
+ const toast=document.createElement('div');
+ toast.className='achievement-toast rarity-'+rarity.toLowerCase();
+ toast.setAttribute('role','status');
+ const heading=document.createElement('strong');heading.textContent='🏆 Achievement unlocked: '+item.name;
+ const details=document.createElement('p');details.textContent=item.description;
+ const meta=document.createElement('div');meta.className='small';meta.textContent=category+' · '+rarity+' · +'+rarityInfo[rarity]+' points';
+ toast.append(heading,details,meta);stack.appendChild(toast);
+ const finish=()=>{toast.classList.add('fade');setTimeout(()=>{toast.remove();achievementToastBusy=false;showNextAchievementToast()},320)};
+ toast.addEventListener('click',finish,{once:true});
+ setTimeout(()=>{if(toast.isConnected)finish()},4200);
+}
+function checkAchievements(){
+ let changed=false;
+ for(const [id,name,description,condition] of achievements){
+  if(!unlockedAchievements.includes(id)&&condition()){
+   unlockedAchievements.push(id);changed=true;
+   $('message').textContent='Achievement unlocked: '+name;
+   queueAchievementToast(id,name,description);
+  }
+ }
+ if(changed){renderAchievements();drawRecords();}
+}
+function renderAchievements(){
+ renderMastery();
+ $('achievementCount').textContent=unlockedAchievements.length+' / '+achievements.length;
+ $('secretCounter').textContent='Secret bricks: '+hiddenBrickIds.length+' / 50 · Collection boost: +'+Math.floor(hiddenBrickIds.length/5)+'%';
+ const points=achievementPoints();
+ $('achievementBonus').textContent=Math.pow(1.02,achievementBonusLevels()).toFixed(2)+'×';
+ $('achievementProgress').textContent=points+' rarity points · '+(points%10)+'/10 toward next +2% bonus · Super Stud: '+superStudIds.size+' challenges';
+ const category=$('achievementCategory').value,rarity=$('achievementRarity').value,status=$('achievementStatus').value;
+ const filtered=achievements.filter(([id])=>{
+  const done=unlockedAchievements.includes(id);
+  return (category==='all'||achievementCategory(id)===category)&&(rarity==='all'||achievementRarity(id)===rarity)&&(status==='all'||(status==='unlocked'&&done)||(status==='locked'&&!done));
+ });
+ $('achievements').innerHTML=filtered.map(([id,name,description])=>{
+  const done=unlockedAchievements.includes(id),r=achievementRarity(id);
+  return `<div class="achievement ${done?'done':''} rarity-${r.toLowerCase()}"><b>${done?'🏆':'🔒'} ${name}</b><div class="achievement-meta"><span class="ach-tag">${achievementCategory(id)}</span><span class="ach-tag">${r}</span><span class="ach-tag">+${rarityInfo[r]} points</span></div><div class="small">${description}</div><div class="small">${done?'Unlocked':'Locked'}</div></div>`;
+ }).join('')||'<p class="muted">No achievements match these filters.</p>';
+}
+for(const category of ['Studs & Production','Clicking & Combos','Upgrades & Research','Ascension','Golden & Rainbow','Offline','Golden Bricks','Secrets & Challenges','Super Stud']){
+ const opt=document.createElement('option');opt.value=category;opt.textContent=category;$('achievementCategory').append(opt);
+}
+for(const rarity of Object.keys(rarityInfo)){
+ const opt=document.createElement('option');opt.value=rarity;opt.textContent=rarity;$('achievementRarity').append(opt);
+}
+for(const id of ['achievementCategory','achievementRarity','achievementStatus'])$(id).addEventListener('change',renderAchievements);
+function build(){
+$("goldShop").innerHTML=goldItems.filter((item,i)=>i!==9).map((item,i)=>`<button class="upgrade" data-gold="${i}"><span style="font-size:24px">${item[1]}</span><span class="details"><b>${item[0]}</b><div class="small">${item[2]}</div><div class="cost" id="goldCost${i}"></div></span><b id="goldLevel${i}"></b></button>`).join("");
+$("shop").innerHTML=normal.map((x,i)=>`
+<button class="upgrade" data-normal="${i}" style="${i<2?"":"display:none"}">
+<span style="font-size:25px">${x[1]}</span>
+<span class="details">
+<b>${x[0]}</b>
+<div class="small">${x[2]}</div>
+<div class="cost">Cost: <span id="cost${i}"></span></div>
+</span>
+<b id="owned${i}">0</b>
+</button>`).join("");
+
+$("specialShop").innerHTML=special.map((x,i)=>`
+<button class="upgrade" data-special="${i}" style="${i===0?"":"display:none"}">
+<span style="font-size:25px">${x[1]}</span>
+<span class="details">
+<b>${x[0]}</b>
+<div class="small">${x[2]}</div>
+<div class="cost">Cost: ${x[3]} AP</div>
+</span>
+<b id="specialOwned${i}">🔒</b>
+</button>`).join("");
+}
+
+function render(){
+ highestSps=Math.max(highestSps,sps());highestClick=Math.max(highestClick,clickPower());highestBalance=Math.max(highestBalance,money);bestRun=Math.max(bestRun,total);
+$("money").textContent=displayNum(money);
+$("sps").textContent=displayNum(sps());
+$("ap").textContent=fmt(ap);
+$("goldShards").textContent=fmt(goldShards);
+goldItems.forEach((item,i)=>{
+if(i===9){const oldBtn=document.querySelector(`[data-gold="${i}"]`);if(oldBtn)oldBtn.hidden=true;return;}
+const level=goldUpgrades[i],max=item[3].length,price=item[3][level];
+$("goldLevel"+i).textContent=level+"/"+max;
+$("goldCost"+i).textContent=level>=max?"MAX LEVEL":"Cost: "+price+" shards";
+const btn=document.querySelector(`[data-gold="${i}"]`);
+btn.disabled=level>=max||goldShards<price;
+});
+$("mult").textContent=formatMultiplier(multiplier());
+$("ascensionBonus").textContent=formatMultiplier(ascensionFactor());
+$("power").textContent="+"+displayNum(clickPower())+" studs per click";
+const milestones=ascensionMilestones();
+const requirement=milestones.nextCost;
+$("progressText").textContent=fmt(Math.min(milestones.remaining,requirement))+" / "+fmt(requirement);
+$("progress").style.width=Math.min(100,milestones.remaining/requirement*100)+"%";
+$("burn").disabled=milestones.count<1;
+$("available").textContent=milestones.count>0?"Ascensions ready: +"+fmt(milestones.count):"No ascensions ready yet";
+$("burnMessage").textContent=milestones.count>0?"+"+fmt(milestones.count)+" ready to claim! Next ascension requires "+fmt(requirement)+" lifetime studs.":"Earn "+fmt(requirement-milestones.remaining)+" more studs (across runs) for the next ascension.";
+// Ready ascensions show only a preview; the active bonus stays unchanged until claim.
+const projectedClaimed=ascensions+(milestones.count||1);
+$("nextMultLabel").textContent=milestones.count>0?"TOTAL MULTIPLIER AFTER CLAIM":"TOTAL MULTIPLIER AFTER NEXT ASCENSION";
+$("nextMult").textContent=formatMultiplier(multiplier()/ascensionFactor()*(1+projectedClaimed));
+$("nextPrice").textContent=fmt(requirement);
+$("golden").style.display=goldenVisible?"block":"none";
+
+if(goldenVisible)placeGolden(false);
+const activeBuffs=[];
+if(Date.now()<frenzyUntil)activeBuffs.push("🔥 FRENZY: "+frenzyStrength()+"× all production ("+Math.ceil((frenzyUntil-Date.now())/1000)+"s)");
+if(Date.now()<clickStormUntil)activeBuffs.push("👆 CLICK STORM: 5× clicking ("+Math.ceil((clickStormUntil-Date.now())/1000)+"s)");
+if(Date.now()<overdriveUntil)activeBuffs.push("🏭 FACTORY OVERDRIVE: 4× automatic production ("+Math.ceil((overdriveUntil-Date.now())/1000)+"s)");
+if(Date.now()<rainbowBuffUntil){const buff=rainbowBuffs.find(b=>b.id===rainbowBuffType);if(buff)activeBuffs.push("🌈 "+buff.name+": "+buff.detail+" ("+Math.ceil((rainbowBuffUntil-Date.now())/1000)+"s)");}
+if(activeBuffs.length)$("message").title=activeBuffs.join(" | ");else $("message").title="";
+normal.forEach((x,i)=>{
+$("cost"+i).textContent=fmt(cost(i));
+$("owned"+i).textContent=owned[i];
+const b=document.querySelector(`[data-normal="${i}"]`);
+b.style.display=(i<2||owned[i-1]>0)?"":"none";
+b.disabled=money<cost(i);
+});
+
+$("specialStatus").textContent=ascensions>0
+?"Permanent shop unlocked! Purchases survive every ascension."
+:"Unlocks after your first ascension.";
+
+special.forEach((x,i)=>{
+const b=document.querySelector(`[data-special="${i}"]`);
+const unlocked=i===0 ? ascensions>0 : permanent[i-1];
+b.style.display=unlocked?"":"none";
+$("specialOwned"+i).textContent=permanent[i]?"✓":"🔒";
+b.disabled=!unlocked||permanent[i]||ap<x[3];
+if(permanent[i])b.style.borderColor="#16a34a";
+});
+
+drawSkills();drawRecords();renderExtras();renderOffline();
+}
+
+function gain(n,isAuto=false){
+if(Number.isNaN(n)||n<=0)return;
+n=finiteCap(n);
+money=safeSum(money,n);total=safeSum(total,n);lifetimeStuds=safeSum(lifetimeStuds,n);
+if(isAuto){lifetimeAuto=safeSum(lifetimeAuto,n);if(runClicks===0){noClickRunStuds=safeSum(noClickRunStuds,n);bestNoClick=Math.max(bestNoClick,noClickRunStuds);}}
+checkAchievements();render();
+}
+
+$("brick").addEventListener("click",e=>{
+spawnClickParticles(e);
+const now=Date.now();
+if(now-lastComboClickAt>2000)comboClicks=0;
+comboClicks++;
+if(comboMultiplier()>=5&&[frenzyUntil,clickStormUntil,overdriveUntil].filter(until=>now<until).length>=2)burnFeats.perfectStorm=true;bestCombo=Math.max(bestCombo,comboClicks);lastComboClickAt=now;
+clicks++;runClicks++;
+const n=clickPower();
+gain(n);playClickSound();
+if(!settings.reducedMotion){
+ const f=document.createElement("span");f.className="float";
+ f.textContent="+"+displayNum(n);
+ f.style.left=e.clientX+"px";f.style.top=e.clientY+"px";
+ document.body.appendChild(f);setTimeout(()=>f.remove(),850);
+}
+});
+
+$("shop").addEventListener("click",e=>{
+const b=e.target.closest("[data-normal]");
+if(!b)return;
+
+const i=+b.dataset.normal;
+const c=cost(i);
+if(money<c)return;
+
+money-=c;
+owned[i]++;upgradesPurchased++;checkAchievements();
+$("message").textContent=normal[i][0]+" purchased!";
+render();
+});
+
+$("skillTree").addEventListener("click",e=>{const btn=e.target.closest("[data-skill]");if(!btn)return;const i=+btn.dataset.skill;if(skillOwned[i]||skillPoints<1||!skills[i][3].every(j=>skillOwned[j]))return;skillOwned[i]=true;skillPoints--;$("message").textContent="🌳 Learned "+skills[i][0]+"!";render();saveGame();});
+$("specialShop").addEventListener("click",e=>{
+const b=e.target.closest("[data-special]");
+if(!b)return;
+
+const i=+b.dataset.special;
+if(ap<special[i][3]||permanent[i]||ap===0||(i>0&&!permanent[i-1]))return;
+
+ap-=special[i][3];
+permanent[i]=true;checkAchievements();
+$("message").textContent=special[i][0]+" permanently unlocked!";
+render();
+});
+
+$("burn").addEventListener("click",()=>{
+const batch=affordableAscensions();if(batch.count<1)return;
+if(!confirm("Claim +"+fmt(batch.count)+" earned ascensions? These were unlocked by your lifetime studs (no studs are deducted). Your current run and normal upgrades reset; permanent upgrades stay."))return;
+const before=ascensions;
+ascensions+=batch.count;ap+=batch.count;
+const gainedSkills=Math.floor(ascensions/3)-Math.floor(before/3);
+skillPoints+=gainedSkills;totalSkillPointsEarned+=gainedSkills;
+money=0;total=0;runClicks=0;noClickRunStuds=0;
+owned=Array(normal.length).fill(0);
+$("message").textContent="Ascended "+fmt(batch.count)+" times! Total ascensions: "+fmt(ascensions)+". Multiplier: "+formatMultiplier(multiplier());
+checkAchievements();render();
+});
+$("goldShop").addEventListener("click",e=>{
+const btn=e.target.closest("[data-gold]");if(!btn)return;
+const i=Number(btn.dataset.gold),level=goldUpgrades[i],price=goldItems[i][3][level];
+if(i===9||price===undefined||goldShards<price)return;
+goldShards-=price;goldUpgrades[i]++;
+$("message").textContent="🌟 "+goldItems[i][0]+" upgraded to level "+goldUpgrades[i]+"!";
+render();saveGame();
+});
+$("golden").addEventListener("click",()=>{
+if(!goldenVisible)return;
+goldenVisible=false;goldenExpiresAt=0;goldenCollected++;goldenRarityCounts[currentRarity]++;burnRarityCounts[currentRarity]++;
+const reinforcementRoll=Math.random()<1/500;
+if(currentRarity===4&&rainbowVisible&&comboMultiplier()>=5)burnFeats.prismaticEclipses++;
+const rarity=rarities[currentRarity];const earned=Math.max(1,Math.ceil((1+goldUpgrades[5]+(skillOwned[5]?1:0))*rarity.scale));goldShards+=Math.ceil(earned*(researchOwned[2]?1.1:1));
+const luckyBonus=Math.random()<0.1*goldUpgrades[6];
+const rewards=["frenzy","payout","clickStorm","overdrive"];
+const selected=rewards[Math.floor(Math.random()*rewards.length)];
+const chosen=[selected];
+if(luckyBonus){const remaining=rewards.filter(x=>x!==selected);chosen.push(remaining[Math.floor(Math.random()*remaining.length)]);}
+const messages=[];
+for(const rewardType of chosen){
+if(rewardType==="frenzy"){
+frenzyUntil=Math.max(Date.now(),frenzyUntil)+frenzyDuration()*rarity.scale;frenzies++;
+messages.push("🔥 "+frenzyStrength()+"× Frenzy for "+Math.round(frenzyDuration()/1000)+" seconds");
+}else if(rewardType==="payout"){
+const reward=money<=0?15*rarity.scale:money*(0.75+Math.random()*0.75)*(1+0.2*goldUpgrades[3])*(skillOwned[7]?1.5:1)*rarity.scale;
+gain(reward);messages.push("💰 "+fmt(reward)+" studs");
+}else if(rewardType==="clickStorm"){
+clickStormUntil=Math.max(Date.now(),clickStormUntil)+90000*rarity.scale*effectDurationBoost();
+messages.push("👆 5× Click Storm for "+Math.round(90*rarity.scale*effectDurationBoost())+" seconds");
+}else if(rewardType==="overdrive"){
+overdriveUntil=Math.max(Date.now(),overdriveUntil)+90000*rarity.scale*effectDurationBoost();
+messages.push("🏭 4× Factory Overdrive for "+Math.round(90*rarity.scale*effectDurationBoost())+" seconds");
+}
+}
+$("message").textContent="✨ "+rarity.name+" Golden Brick: "+messages.join(" + ")+"! +"+earned+" shard(s).";
+if(reinforcementRoll){reinforcementCount++;reinforcementThisCycle++;$("message").textContent+=" 🟨 REINFORCEMENT! A second Golden Brick has appeared!";spawnGolden(Date.now(),true);}
+checkAchievements();render();saveGame();
+});
+// Only one Burnt LEGO Challenge reward may be claimed per reset.
+// A modal chooser is used instead of an ambiguous text prompt when several qualify.
+function chooseBurnChallenge(ready){
+ return new Promise(resolve=>{
+  const overlay=document.createElement('div');
+  overlay.setAttribute('role','presentation');
+  overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(8,12,24,.82);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(8px)';
+  const dialog=document.createElement('div');
+  dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Choose one Burnt LEGO Challenge');
+  dialog.style.cssText='width:min(100%,520px);max-height:85vh;overflow:auto;background:#171d30;color:#f4f5ff;border:1px solid #485372;border-radius:20px;padding:24px;box-shadow:0 24px 90px #0009';
+  const heading=document.createElement('h2');heading.textContent='Choose ONE Burnt LEGO Challenge';heading.style.margin='0 0 12px';dialog.appendChild(heading);
+  const info=document.createElement('p');info.textContent='Only your selected skin will be awarded. All other completed challenges and their cycle-specific progress will reset. This cannot be undone.';info.style.cssText='color:#c4cee4;line-height:1.5;margin:0 0 18px';dialog.appendChild(info);
+  const close=value=>{document.removeEventListener('keydown',onKey);overlay.remove();resolve(value);};
+  const onKey=e=>{if(e.key==='Escape')close(null);};
+  document.addEventListener('keydown',onKey);
+  for(const [id,name] of ready){
+   const button=document.createElement('button');button.type='button';button.textContent='Claim '+name+' skin';
+   button.style.cssText='display:block;width:100%;margin:9px 0;padding:15px;text-align:left;background:#2a3552;color:#fff;border:1px solid #687baf;border-radius:12px;cursor:pointer;font-weight:700';
+   button.addEventListener('click',()=>close(id));dialog.appendChild(button);
+  }
+  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel — do not burn';cancel.style.cssText='width:100%;padding:12px;margin-top:10px;border-radius:12px;background:transparent;color:#c4cee4;border:1px solid #485372;cursor:pointer';
+  cancel.addEventListener('click',()=>close(null));dialog.appendChild(cancel);
+  overlay.appendChild(dialog);document.body.appendChild(overlay);cancel.focus();
+ });
+}
+let burnInProgress=false;
+$("reset").addEventListener("click",async()=>{
+ if(burnInProgress)return;
+ burnInProgress=true;
+ try{
+  const ready=burnChallengeDefinitions.filter(([id,name,desc,condition])=>!burnLegacy.includes(id)&&condition());
+  const warning="BURN ALL STUDS?\n\nThis resets current studs, upgrades, ascensions, currencies and ALL unclaimed Burnt LEGO Challenge progress.\n\nPRESERVED: collected hidden bricks, their locations, achievements, lifetime records, and unlocked skins.\n\nYou may claim AT MOST ONE completed Burnt LEGO Challenge skin per burn.\n\nExport a backup first.";
+  if(!confirm(warning))return;
+  let selected=null;
+  if(ready.length>1){
+   selected=await chooseBurnChallenge(ready);
+   if(selected===null)return;
+  }else if(ready.length===1){
+   selected=ready[0][0];
+  }
+  const selectedName=ready.find(x=>x[0]===selected)?.[1];
+  if(!confirm('FINAL CONFIRMATION: Burn all studs'+(selectedName?' and claim ONLY '+selectedName+'?':' without a Burnt LEGO Challenge reward?')+' All other challenge progress will reset.'))return;
+  captureUnlockedSkins();
+  const previous=savePayload();
+  const keep=['unlockedAchievements','permanentSkinUnlocks','selectedSkin','clickEffect','ownedHats','selectedHat','settings','lifetimeStuds','lifetimeAuto','clicks','bestCombo','bestNoClick','bestRun','highestBalance','highestSps','highestClick','playSeconds','offlineLifetime','offlineSessions','goldenCollected','reinforcementCount','rainbowFound','goldenRarityCounts','frenzies','eventsSeen','upgradesPurchased','totalSkillPointsEarned','secretSkinEquips','hiddenBrickIds','hiddenBrickSeed','secretSettingsReached','secretPageExplorer','secretPagesVisited','secretNewsVisited'];
+  const preserved=Object.fromEntries(keep.map(k=>[k,previous[k]]));
+  if(selected&&!preserved.permanentSkinUnlocks.includes('burn_'+selected))preserved.permanentSkinUnlocks.push('burn_'+selected);
+  const reset={version:18,cornerTrailStep:0,ascensionLifetimeBaseline:previous.lifetimeStuds,burnFeats:{perfectStorm:false,cornerTrailCompleted:false,prismaticEclipses:0,rainbowsThisCycle:0},burnRarityCounts:Array(5).fill(0),reinforcementThisCycle:0,owned:Array(normal.length).fill(0),permanent:Array(special.length).fill(false),...preserved,offlineOwned:Array(offlineNodes.length).fill(false),offlineLastSeen:Date.now(),offlineSavedSps:0,rainbowDiscovered:false,rainbowShards:0,rainbowVisible:false,brickSpawnCount:0,comboClicks:0,lastComboClickAt:0,researchOwned:Array(5).fill(false),rainbowOwned:Array(4).fill(false),rainbowLuckLevel:0,rainbowBuffUntil:0,rainbowBuffType:"",rainbowBuffCount:0,skillOwned:Array(9).fill(false),skillPoints:0,nextEventAt:0,eventType:'',eventUntil:0,goldShards:0,goldUpgrades:Array(goldItems.length).fill(0),money:0,total:0,ap:0,ascensions:0,runClicks:0,noClickRunStuds:0,nextGoldenSpawnAt:0,goldenVisible:false,frenzyUntil:0,clickStormUntil:0,overdriveUntil:0};
+  const legacy=selected?[...new Set([...burnLegacy,selected])]:[...burnLegacy];
+  const oldLegacy=localStorage.getItem(BURN_LEGACY_KEY);
+  // IMPORTANT: pagehide/beforeunload must not autosave the pre-burn state over this new save.
+  resetTransitionPending=true;
+  try{
+   localStorage.setItem(BACKUP_KEY,JSON.stringify(previous));
+   localStorage.setItem(BURN_LEGACY_KEY,JSON.stringify(legacy));
+   localStorage.setItem(SAVE_KEY,JSON.stringify(reset));
+   const written=JSON.parse(localStorage.getItem(SAVE_KEY));
+   if(!isValidSave(written)||written.money!==0||written.ascensions!==0)throw Error('Reset was not stored correctly.');
+  }catch(e){
+   resetTransitionPending=false;
+   try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify(previous));
+    if(oldLegacy===null)localStorage.removeItem(BURN_LEGACY_KEY);
+    else localStorage.setItem(BURN_LEGACY_KEY,oldLegacy);
+   }catch(_){}
+   alert('Burn cancelled: the browser could not save your preserved progress. Nothing was intentionally reset. '+e.message);
+   return;
+  }
+  location.reload();
+ }finally{burnInProgress=false;}
+});
+// Full Wipe is intentionally separate from Burn All Studs. Nothing is kept.
+// Do not use localStorage.clear(): that would erase unrelated apps on the same origin.
+$('fullWipe').addEventListener('click',()=>{
+ if(!confirm('FULL WIPE WARNING\n\nThis deletes ALL progress for LEGO Stud Clicker, including achievements, lifetime records, hidden bricks, unlocked skins, hats, Burnt LEGO Challenge rewards AND browser backups.\n\nIf you might want it later, EXPORT a save first.\n\nContinue?'))return;
+ const answer=prompt('FINAL CONFIRMATION: Type WIPE ALL to delete every LEGO Stud Clicker save and reward forever.');
+ if(answer!=='WIPE ALL'){
+  if(answer!==null)alert('Full Wipe cancelled. Type WIPE ALL exactly to confirm.');
+  return;
+ }
+ // Pause every in-game save writer *before* deleting local storage keys.
+ resetTransitionPending=true;
+ try{
+  for(let i=localStorage.length-1;i>=0;i--){
+   const key=localStorage.key(i);
+   if(key&&key.startsWith('legoStudClicker'))localStorage.removeItem(key);
+  }
+  if(Array.from({length:localStorage.length},(_,i)=>localStorage.key(i)).some(k=>k&&k.startsWith('legoStudClicker')))
+   throw Error('Some saved data is still present.');
+ }catch(error){
+  resetTransitionPending=false;
+  alert('Full Wipe failed. Your browser did not allow deleting all game save data: '+error.message);
+  return;
+ }
+ location.reload();
+});
+const SAVE_KEY="legoStudClickerSave";
+const BACKUP_KEY="legoStudClickerSave_backup";
+let saveStorageAvailable=true;
+let saveBlocked=false;
+// While replacing/clearing the saved state, never let scheduled or unload autosaves restore old progress.
+let resetTransitionPending=false;
+let lastGoodSave="";
+function savePayload(){
+ captureUnlockedSkins();
+ return {version:17,rainbowLuckLevel,rainbowBuffUntil,rainbowBuffType,rainbowBuffCount,ownedHats,selectedHat,ascensionLifetimeBaseline,burnFeats,burnRarityCounts,reinforcementCount,reinforcementThisCycle,permanentSkinUnlocks,hiddenBrickSeed,cornerTrailStep,hiddenBrickIds,secretSettingsReached,secretPageExplorer,secretPagesVisited,secretNewsVisited,secretSkinEquips,offlineOwned,offlineLastSeen:Date.now(),offlineSavedSps:sps(),offlineLifetime,offlineSessions,rainbowDiscovered,rainbowShards,rainbowFound,rainbowVisible,rainbowExpiresAt,rainbowX,rainbowY,brickSpawnCount,comboClicks,lastComboClickAt,bestCombo,selectedSkin,clickEffect,researchOwned,rainbowOwned,settings,skillOwned,skillPoints,totalSkillPointsEarned,nextEventAt,eventType,eventUntil,eventsSeen,highestSps,highestClick,highestBalance,bestRun,playSeconds,goldenRarityCounts,currentRarity,clickStormUntil,overdriveUntil,goldShards,goldUpgrades,money,total,owned,ap,ascensions,clicks,permanent,lifetimeStuds,lifetimeAuto,runClicks,noClickRunStuds,bestNoClick,goldenCollected,frenzies,upgradesPurchased,nextGoldenSpawnAt,goldenVisible,goldenExpiresAt,goldenX,goldenY,frenzyUntil,unlockedAchievements};
+}
+function isValidSave(d){return d&&typeof d==="object"&&!Array.isArray(d)&&Array.isArray(d.owned)&&Array.isArray(d.permanent)&&d.owned.length<=1000&&d.permanent.length<=1000;}
+function readStoredSave(){
+ try{
+  const raw=localStorage.getItem(SAVE_KEY);
+  if(raw){try{if(isValidSave(JSON.parse(raw)))return raw;}catch(e){} }
+  const backup=localStorage.getItem(BACKUP_KEY);
+  if(backup){try{if(isValidSave(JSON.parse(backup))){localStorage.setItem(SAVE_KEY,backup);return backup;}}catch(e){} }
+  if(raw||backup){saveBlocked=true;alert("Your saved game could not be read. Autosave is paused to protect it. Import a backup from Settings, or export your current file before resetting.");}
+  return null;
+ }catch(error){saveStorageAvailable=false;console.warn("Browser storage is unavailable.",error);return null;}
+}
+function saveGame(){
+ if(saveBlocked||resetTransitionPending)return false;
+ try{
+  const json=JSON.stringify(savePayload());
+  if(!isValidSave(JSON.parse(json)))throw Error("Invalid game state");
+  localStorage.setItem(SAVE_KEY,json);
+  lastGoodSave=json;saveStorageAvailable=true;
+  return true;
+ }catch(error){
+  saveStorageAvailable=false;
+  console.warn("Autosave failed. Export a backup from Settings.",error);
+  const msg=$("message");if(msg)msg.textContent="Autosave unavailable — export a backup in Settings.";
+  return false;
+ }
+}
+function exportSnapshot(){return JSON.stringify(savePayload(),null,2);}
+function loadGame(){
+const safe=(v,fallback=0)=>typeof v==='number'&&Number.isFinite(v)&&v>=0?v:fallback;
+try{
+const raw=readStoredSave();if(!raw)return;
+const d=JSON.parse(raw);if(!d||!Array.isArray(d.owned)||!Array.isArray(d.permanent))return;
+burnRarityCounts=Array(5).fill(0);if(Array.isArray(d.burnRarityCounts))d.burnRarityCounts.slice(0,5).forEach((v,i)=>burnRarityCounts[i]=safe(v));reinforcementCount=safe(d.reinforcementCount);reinforcementThisCycle=safe(d.reinforcementThisCycle);
+burnFeats=d.burnFeats&&typeof d.burnFeats==='object'?{perfectStorm:Boolean(d.burnFeats.perfectStorm),cornerTrailCompleted:Boolean(d.burnFeats.cornerTrailCompleted),prismaticEclipses:Math.max(0,Math.floor(Number(d.burnFeats.prismaticEclipses)||0)),rainbowsThisCycle:Math.max(0,Math.floor(Number(d.burnFeats.rainbowsThisCycle)||0))}:{perfectStorm:false,cornerTrailCompleted:false,prismaticEclipses:0,rainbowsThisCycle:0};
+permanentSkinUnlocks=Array.isArray(d.permanentSkinUnlocks)?d.permanentSkinUnlocks.filter(id=>skins.some(x=>x[0]===id)):[];
+hiddenBrickSeed=Number.isInteger(d.hiddenBrickSeed)&&d.hiddenBrickSeed>0?d.hiddenBrickSeed:hiddenBrickSeed;
+cornerTrailStep=Number.isInteger(d.cornerTrailStep)?Math.max(0,Math.min(4,d.cornerTrailStep)):0;
+hiddenBrickIds=Array.isArray(d.hiddenBrickIds)?[...new Set(d.hiddenBrickIds.filter(v=>Number.isInteger(v)&&v>=0&&v<50))]:[];
+secretSettingsReached=Boolean(d.secretSettingsReached)||hiddenBrickIds.includes(49);
+secretPageExplorer=Boolean(d.secretPageExplorer);
+secretPagesVisited=Array.isArray(d.secretPagesVisited)?d.secretPagesVisited.filter(v=>typeof v==="string"):[];
+secretNewsVisited=Boolean(d.secretNewsVisited);
+secretSkinEquips=Number.isFinite(d.secretSkinEquips)?d.secretSkinEquips:0;
+
+money=safe(d.money);total=safe(d.total);clicks=safe(d.clicks);ap=safe(d.ap);
+offlineOwned=Array(offlineNodes.length).fill(false);if(Array.isArray(d.offlineOwned))d.offlineOwned.slice(0,offlineNodes.length).forEach((v,i)=>offlineOwned[i]=Boolean(v));
+offlineLastSeen=safe(d.offlineLastSeen);offlineSavedSps=safe(d.offlineSavedSps);offlineLifetime=safe(d.offlineLifetime);offlineSessions=safe(d.offlineSessions);
+rainbowLuckLevel=Math.min(10,Math.max(0,Math.floor(safe(d.rainbowLuckLevel,d.goldUpgrades?.[9]||0))));
+rainbowBuffUntil=safe(d.rainbowBuffUntil);rainbowBuffType=rainbowBuffs.some(b=>b.id===d.rainbowBuffType)?d.rainbowBuffType:"";rainbowBuffCount=safe(d.rainbowBuffCount);
+ownedHats=Array.isArray(d.ownedHats)?[...new Set(["none",...d.ownedHats.filter(id=>hats.some(h=>h[0]===id))])]:["none"];selectedHat=ownedHats.includes(d.selectedHat)?d.selectedHat:"none";
+rainbowDiscovered=Boolean(d.rainbowDiscovered);rainbowShards=safe(d.rainbowShards);rainbowFound=safe(d.rainbowFound);rainbowVisible=Boolean(d.rainbowVisible);rainbowExpiresAt=safe(d.rainbowExpiresAt);rainbowX=safe(d.rainbowX);rainbowY=safe(d.rainbowY);brickSpawnCount=safe(d.brickSpawnCount);
+comboClicks=safe(d.comboClicks);lastComboClickAt=safe(d.lastComboClickAt);bestCombo=safe(d.bestCombo);if(Date.now()-lastComboClickAt>2000)comboClicks=0;
+clickEffect=["sparkle","burst","minimal","off"].includes(d.clickEffect)?d.clickEffect:"sparkle";
+selectedSkin=typeof d.selectedSkin==="string"?d.selectedSkin:"classic";
+researchOwned=Array(5).fill(false);if(Array.isArray(d.researchOwned))d.researchOwned.slice(0,5).forEach((v,i)=>researchOwned[i]=Boolean(v));
+rainbowOwned=Array(4).fill(false);if(Array.isArray(d.rainbowOwned))d.rainbowOwned.slice(0,4).forEach((v,i)=>rainbowOwned[i]=Boolean(v));
+if(d.settings&&typeof d.settings==="object")settings={sound:Boolean(d.settings.sound),reducedMotion:Boolean(d.settings.reducedMotion),numbers:"short"};
+if(rainbowVisible&&Date.now()>=rainbowExpiresAt)rainbowVisible=false;
+if(rainbowVisible){$("rainbowBrick").style.left=rainbowX+"px";$("rainbowBrick").style.top=rainbowY+"px";}
+
+skillOwned=Array(9).fill(false);if(Array.isArray(d.skillOwned))d.skillOwned.slice(0,9).forEach((v,i)=>skillOwned[i]=Boolean(v));
+totalSkillPointsEarned=safe(d.totalSkillPointsEarned,Math.floor(safe(d.ascensions)/3));skillPoints=safe(d.skillPoints,Math.max(0,totalSkillPointsEarned-skillOwned.filter(Boolean).length));
+nextEventAt=safe(d.nextEventAt);eventType=["rain","click","factory"].includes(d.eventType)?d.eventType:"";eventUntil=safe(d.eventUntil);eventsSeen=safe(d.eventsSeen);
+highestSps=safe(d.highestSps);highestClick=safe(d.highestClick);highestBalance=safe(d.highestBalance);bestRun=safe(d.bestRun);playSeconds=safe(d.playSeconds);
+goldenRarityCounts=Array(5).fill(0);if(Array.isArray(d.goldenRarityCounts))d.goldenRarityCounts.slice(0,5).forEach((v,i)=>goldenRarityCounts[i]=safe(v));currentRarity=Math.min(4,Math.floor(safe(d.currentRarity)));
+goldShards=safe(d.goldShards);
+goldUpgrades=Array(goldItems.length).fill(0);
+if(Array.isArray(d.goldUpgrades))d.goldUpgrades.slice(0,goldItems.length).forEach((v,i)=>goldUpgrades[i]=Math.min(goldItems[i][3].length,Math.floor(safe(v))));
+owned=Array(normal.length).fill(0);d.owned.slice(0,normal.length).forEach((v,i)=>owned[i]=safe(v));
+permanent=Array(special.length).fill(false);d.permanent.slice(0,special.length).forEach((v,i)=>permanent[i]=Boolean(v));
+// Older versions used unspent points as the multiplier. Recover previously spent points.
+const previouslySpent=permanent.reduce((sum,b,i)=>sum+(b?special[i][3]:0),0);
+ascensions=safe(d.ascensions,ap+previouslySpent);
+lifetimeStuds=safe(d.lifetimeStuds,total);lifetimeAuto=safe(d.lifetimeAuto);
+ascensionLifetimeBaseline=safe(d.ascensionLifetimeBaseline,0);
+runClicks=safe(d.runClicks,clicks);noClickRunStuds=safe(d.noClickRunStuds);
+bestNoClick=safe(d.bestNoClick,noClickRunStuds);goldenCollected=safe(d.goldenCollected);
+frenzies=safe(d.frenzies);upgradesPurchased=safe(d.upgradesPurchased,owned.reduce((a,b)=>a+b,0));
+nextGoldenSpawnAt=safe(d.nextGoldenSpawnAt);goldenVisible=Boolean(d.goldenVisible);
+goldenExpiresAt=safe(d.goldenExpiresAt);goldenX=safe(d.goldenX);goldenY=safe(d.goldenY);
+// Older saves had no expiry; start a fresh 15-second window for a visible brick.
+if(goldenVisible&&!goldenExpiresAt)goldenExpiresAt=Date.now()+brickVisibleDuration();
+if(goldenVisible){const rarity=rarities[currentRarity];$("golden").textContent=rarity.icon+" "+rarity.name.toUpperCase()+" GOLDEN BRICK!";$("golden").style.setProperty("--rarity",rarity.color);}
+if(goldenVisible&&Date.now()>=goldenExpiresAt){goldenVisible=false;goldenExpiresAt=0;}
+frenzyUntil=safe(d.frenzyUntil);clickStormUntil=safe(d.clickStormUntil);overdriveUntil=safe(d.overdriveUntil);
+unlockedAchievements=Array.isArray(d.unlockedAchievements)?d.unlockedAchievements.filter(x=>typeof x==='string'):[];
+$("message").textContent="💾 Saved game loaded!";
+}catch(error){saveBlocked=true;console.warn("Could not load game; autosave paused to protect saved progress.",error);const msg=$("message");if(msg)msg.textContent="Save loading failed. Autosave paused; import a backup from Settings.";}
+}
+$("rainbowBrick").addEventListener("click",()=>{
+ if(!rainbowVisible)return;
+ endRainbow();rainbowDiscovered=true;rainbowFound++;burnFeats.rainbowsThisCycle++;rainbowShards+=1;
+ const buff=rainbowBuffs[Math.floor(Math.random()*rainbowBuffs.length)];
+ rainbowBuffType=buff.id;rainbowBuffUntil=Date.now()+buff.duration*(rainbowOwned[3]?3:1);rainbowBuffCount++;
+ const reward=buff.id==="hyperfortune"?Math.max(1e9,sps()*10000,clickPower()*10000):Math.max(1e6,Math.min(1e40,Math.max(money,1)*100));
+ gain(reward);$("message").textContent="🌈 RAINBOW RAVE! "+buff.name+" — "+buff.detail+" for "+Math.round((rainbowBuffUntil-Date.now())/1000)+"s! +1 Rainbow Shard and "+fmt(reward)+" studs!";
+ checkAchievements();render();saveGame();
+});
+$("researchShop").addEventListener("click",e=>{const b=e.target.closest("[data-research]");if(!b)return;const i=+b.dataset.research;if(researchOwned[i]||money<researchItems[i][2])return;money-=researchItems[i][2];researchOwned[i]=true;render();saveGame();});
+$("rainbowLuckShop").addEventListener("click",e=>{if(!e.target.closest("[data-rainbow-luck]"))return;const cost=rainbowLuckCosts[rainbowLuckLevel];if(rainbowLuckLevel>=10||money<cost)return;money-=cost;rainbowLuckLevel++;checkAchievements();render();saveGame();});
+$("hatShop").addEventListener("click",e=>{const b=e.target.closest("[data-hat]");if(!b)return;const hat=hats.find(h=>h[0]===b.dataset.hat);if(!hat)return;if(!ownedHats.includes(hat[0])){if(money<hat[3])return;money-=hat[3];ownedHats.push(hat[0]);}selectedHat=hat[0];checkAchievements();render();saveGame();});
+document.querySelectorAll("[data-catalog]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-catalog]").forEach(x=>x.classList.toggle("active",x===b));$("skinCatalog").hidden=b.dataset.catalog!=="studs";$("hatCatalog").hidden=b.dataset.catalog!=="hats";}));
+$("rainbowShop").addEventListener("click",e=>{const b=e.target.closest("[data-rainbow-upgrade]");if(!b)return;const i=+b.dataset.rainbowUpgrade;if(rainbowOwned[i]||rainbowShards<rainbowItems[i][2])return;rainbowShards-=rainbowItems[i][2];rainbowOwned[i]=true;render();saveGame();});
+$("effectChoices").addEventListener("click",e=>{const b=e.target.closest("[data-effect]");if(!b)return;clickEffect=b.dataset.effect;renderExtras();saveGame();});
+$("skinShop").addEventListener("click",e=>{const b=e.target.closest("[data-skin-choice]");if(!b)return;const x=skins.find(x=>x[0]===b.dataset.skinChoice);if(!x||!x[3]())return;if(selectedSkin!==x[0])secretSkinEquips++;selectedSkin=x[0];checkAchievements();render();saveGame();});
+$("settingSound").addEventListener("change",e=>{settings.sound=e.target.checked;saveGame();});
+$("settingMotion").addEventListener("change",e=>{settings.reducedMotion=e.target.checked;updateSettings();saveGame();});
+// Compact display is standard in v1.44, including for imported older saves.
+// File exports work on file:// pages as well as hosted pages. No storage access is required.
+function saveFileDownload(filename,content){
+ const blob=new Blob([content],{type:"application/json;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement("a");link.href=url;link.download=filename;
+ document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+$("exportSave").addEventListener("click",()=>{
+ try{
+  const payload=savePayload();
+  if(!isValidSave(payload))throw Error("Game data failed validation.");
+  const content=JSON.stringify(payload,null,2);
+  saveFileDownload("lego-stud-clicker-v1.46-save.json",content);
+  $("message").textContent="Save export started. Check your Downloads folder.";
+ }catch(err){console.error("Export failed",err);alert("Could not export your save: "+err.message);}
+});
+$("importSave").addEventListener("click",()=>{
+ const input=$("importFile");input.value="";input.click();
+});
+$("importFile").addEventListener("change",async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{
+  const raw=await file.text();
+  let data;
+  try{data=JSON.parse(raw);}catch(_){throw Error("This isn't a valid JSON save file.");}
+  if(!isValidSave(data))throw Error("The file isn't a recognised Stud Clicker save (missing owned/permanent upgrades).");
+  if(!confirm("Import this save? Your current game will be replaced. Export a backup first if needed."))return;
+  let oldSave=null;
+  try{oldSave=localStorage.getItem(SAVE_KEY);}catch(_){}
+  // The same unload autosave bug also affected imports; prevent overwriting imported data.
+  resetTransitionPending=true;
+  try{
+   if(oldSave){try{if(isValidSave(JSON.parse(oldSave)))localStorage.setItem(BACKUP_KEY,oldSave);}catch(_){}}
+   localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+   const verification=localStorage.getItem(SAVE_KEY);
+   if(!verification||!isValidSave(JSON.parse(verification)))throw Error("Browser did not retain the imported save.");
+  }catch(storageError){
+   resetTransitionPending=false;
+   try{if(oldSave!==null)localStorage.setItem(SAVE_KEY,oldSave);else localStorage.removeItem(SAVE_KEY);}catch(_){}
+   throw Error("Browser storage is blocked or full. Try opening the game in a normal browser window. "+storageError.message);
+  }
+  saveBlocked=false;
+  location.reload();
+ }catch(err){console.error("Import failed",err);alert("Could not import save: "+err.message);}
+ finally{e.target.value="";}
+});
+// Secret Hunt: 44 seeded random positions, 4 fixed location secrets,
+// one Settings colour puzzle, and the original long-scroll Settings secret.
+// The seed persists through autosaves and changes on a full Burn All Studs reset.
+const secretBrickPages=["play","normal","ascension","permanent","gold","skills","records","achievements","research","skins","offline","news","settings"];
+function seededRandom(index,salt=0){
+ let x=(hiddenBrickSeed^(index*2654435761)^(salt*1013904223))>>>0;
+ x^=x<<13;x^=x>>>17;x^=x<<5;
+ return (x>>>0)/4294967296;
+}
+function createSecret(id,page,top,left,disguise="dot",challenge=false){
+ const root=$("page-"+page);if(!root)return;
+ const b=document.createElement("button");b.type="button";
+ b.className="secret-brick";b.dataset.secret=String(id);
+ if(challenge)b.dataset.challenge="true";
+ b.dataset.disguise=disguise;b.setAttribute("aria-label","Inspect unusual detail");b.title="";
+ b.style.top=top;b.style.left=left;root.appendChild(b);
+}
+function positionCornerTrail(){
+ const b=$("cornerTrail");if(!b)return;
+ const positions=[['bottom','left'],['top','right'],['top','left'],['bottom','right'],['bottom','left']];
+ const [vertical,horizontal]=positions[cornerTrailStep]||positions[0];
+ b.style.top=vertical==='top'?'12px':'auto';b.style.bottom=vertical==='bottom'?'12px':'auto';
+ b.style.left=horizontal==='left'?'12px':'auto';b.style.right=horizontal==='right'?'12px':'auto';
+ b.hidden=false;
+}
+function placeSecretBricks(){
+ for(let i=0;i<44;i++){
+  const page=secretBrickPages[Math.floor(seededRandom(i,1)*secretBrickPages.length)];
+  const root=$("page-"+page);if(!root)continue;
+  const height=Math.max(root.scrollHeight,root.getBoundingClientRect().height,340);
+  const y=25+Math.floor(seededRandom(i,2)*Math.max(220,height-65));
+  const x=4+Math.floor(seededRandom(i,3)*90);
+  createSecret(i,page,y+"px",x+"%",["dot","dash","chip","glint"][i%4],i<12);
+ }
+ // Hand-placed secrets do not move after resetting the game.
+ createSecret(44,"news","90%","96%","dash",true);
+ createSecret(45,"records","88%","3%","chip",true);
+ createSecret(46,"skins","95%","94%","glint",true);
+ const play=$("page-play");
+ const trail=document.createElement("button");trail.type="button";trail.id="cornerTrail";
+ trail.className="corner-trail";trail.setAttribute("aria-label","Unusual corner tile");
+ trail.title="";play.appendChild(trail);positionCornerTrail();
+ updateSecretBricks();
+}
+function updateSecretBricks(){
+ document.querySelectorAll("[data-secret]").forEach(b=>b.classList.toggle("found",hiddenBrickIds.includes(Number(b.dataset.secret))));
+}
+document.addEventListener("click",e=>{
+ const corner=e.target.closest("#cornerTrail");
+ if(corner){
+  cornerTrailStep++;
+  if(cornerTrailStep>=5){cornerTrailStep=0;burnFeats.cornerTrailCompleted=true;if(!hiddenBrickIds.includes(47))collectSecretBrick(47);else {$("message").textContent="Corner Trail completed again!";saveGame();}}
+  else {positionCornerTrail();saveGame();}
+  return;
+ }
+ const b=e.target.closest("[data-secret]");if(!b)return;
+ const id=Number(b.dataset.secret);
+ if(hiddenBrickIds.includes(id))return;
+ if(b.dataset.challenge==="true")openHunt(id);else collectSecretBrick(id);
+});
+function collectSecretBrick(id){
+ if(hiddenBrickIds.includes(id))return;
+ hiddenBrickIds.push(id);
+ if(id===49)secretSettingsReached=true;
+ updateSecretBricks();positionCornerTrail();
+ $("message").textContent="Secret brick found! "+hiddenBrickIds.length+" / 50";
+ checkAchievements();renderAchievements();saveGame();
+}
+
+
+// Four puzzle types distributed across twelve disguised brick triggers.
+let huntId=-1,huntTimer=null,huntStarted=0,huntClicks=0,huntStep=0,huntAnswer=0;
+const huntOverlay=$('huntOverlay'),huntActions=$('huntActions'),huntMeter=$('huntMeter');
+function closeHunt(){huntOverlay.hidden=true;huntId=-1;if(huntTimer){clearInterval(huntTimer);huntTimer=null;}}
+$('huntClose').addEventListener('click',closeHunt);
+function finishHunt(){const id=huntId;closeHunt();collectSecretBrick(id);}
+function openHunt(id){
+ closeHunt();huntId=id;huntOverlay.hidden=false;huntStarted=Date.now();huntClicks=0;huntStep=0;
+ const type=id%4;
+ const heading=['Spot the Odd One Out','Rapid-Fire Challenge','Pattern Lock','The Hidden Sequence'][type];
+ $('huntHeading').textContent=heading;
+ if(type===0){
+  const colors=['#36526d','#415a74','#4b627b'];const base=colors[Math.floor(id/4)%3];
+  huntAnswer=Math.floor(Math.random()*16);
+  $('huntInstructions').textContent='Find the single tile with a different shade.';
+  huntActions.style.gridTemplateColumns='repeat(4,minmax(0,1fr))';
+  huntActions.innerHTML=Array.from({length:16},(_,i)=>`<button type="button" data-choice="${i}" aria-label="Tile ${i+1}" style="background:${i===huntAnswer?'#526f88':base}"></button>`).join('');
+  huntMeter.textContent='One tile is different.';
+ }else if(type===1){
+  const target=id===1?100: id===5?65:40;
+  $('huntInstructions').textContent='Click the button '+target+' times within 15 seconds. The timer starts on your first click.';
+  huntActions.style.gridTemplateColumns='1fr';
+  huntActions.innerHTML='<button type="button" data-tap="1">TAP</button>';
+  huntMeter.textContent='0 / '+target+' clicks · 15.0s';
+ }else if(type===2){
+  huntAnswer=(id*7+3)%9;
+  $('huntInstructions').textContent='Find the one tile with a different symbol. Wrong guesses shuffle the board.';
+  huntActions.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';
+  renderSymbolHunt();
+ }else{
+  $('huntInstructions').textContent='Repeat the sequence: 2 → 4 → 1 → 3. A wrong press restarts it.';
+  huntActions.style.gridTemplateColumns='repeat(4,minmax(0,1fr))';
+  huntActions.innerHTML=[1,2,3,4].map(n=>`<button type="button" data-sequence="${n}">${n}</button>`).join('');
+  huntMeter.textContent='Step 0 of 4';
+ }
+}
+function renderSymbolHunt(){
+ huntActions.innerHTML=Array.from({length:9},(_,i)=>`<button type="button" data-symbol="${i}">${i===huntAnswer?'◇':'◆'}</button>`).join('');
+ huntMeter.textContent='Spot the odd symbol';
+}
+huntActions.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b||huntId<0)return;
+ const type=huntId%4;
+ if(type===0){if(Number(b.dataset.choice)===huntAnswer)finishHunt();else huntMeter.textContent='Not that tile. Look carefully.';}
+ else if(type===1){
+  const target=huntId===1?100:huntId===5?65:40;
+  if(!huntClicks){huntStarted=Date.now();huntTimer=setInterval(()=>{
+   const remaining=Math.max(0,15000-(Date.now()-huntStarted));
+   huntMeter.textContent=huntClicks+' / '+target+' clicks · '+(remaining/1000).toFixed(1)+'s';
+   if(remaining===0){closeHunt();$('message').textContent='Secret challenge expired. Try again.';}
+  },100);}
+  if(Date.now()-huntStarted>15000){closeHunt();return;}
+  huntClicks++;huntMeter.textContent=huntClicks+' / '+target+' clicks';if(huntClicks>=target)finishHunt();
+ }else if(type===2){
+  if(Number(b.dataset.symbol)===huntAnswer)finishHunt();
+  else{huntAnswer=Math.floor(Math.random()*9);renderSymbolHunt();huntMeter.textContent='Wrong tile — the symbols shifted.';}
+ }else{
+  const seq=[2,4,1,3];if(Number(b.dataset.sequence)===seq[huntStep])huntStep++;else huntStep=0;
+  huntMeter.textContent='Step '+huntStep+' of 4';if(huntStep===4)finishHunt();
+ }
+});
+
+// A disguised panel opens a small puzzle. Completing it awards secret brick #49 (ID 48).
+let miniRound=0,miniTarget=0;
+const mini=$('secretMiniGame');
+function renderMini(){
+ if(hiddenBrickIds.includes(48)){$('miniStatus').textContent='Calibration complete. Secret brick already collected.';$('miniTiles').innerHTML='';return;}
+ $('miniStatus').textContent='Patch '+(miniRound+1)+' of 3';
+ miniTarget=(miniRound*7+3)%15;
+ $('miniTiles').innerHTML=Array.from({length:15},(_,i)=>`<button type="button" data-tile="${i}" aria-label="Colour tile ${i+1}" style="background:${i===miniTarget?['#47627b','#456079','#425d76'][miniRound]:'#405a73'}"></button>`).join('');
+}
+$('misprintTrigger').addEventListener('click',()=>{mini.hidden=false;miniRound=0;renderMini();mini.scrollIntoView({behavior:'smooth',block:'nearest'});});
+$('miniClose').addEventListener('click',()=>mini.hidden=true);
+$('miniTiles').addEventListener('click',e=>{
+ const tile=e.target.closest('[data-tile]');if(!tile||hiddenBrickIds.includes(48))return;
+ if(Number(tile.dataset.tile)!==miniTarget){$('miniStatus').textContent='Not quite. Look for the slightly different shade.';return;}
+ miniRound++;
+ if(miniRound>=3){collectSecretBrick(48);$('miniStatus').textContent='Calibration complete — hidden brick discovered!';$('miniTiles').innerHTML='';}
+ else renderMini();
+});
+
+// Track exploration; one visit to each available tab is enough.
+document.querySelectorAll(".tab-button[data-page]").forEach(b=>b.addEventListener("click",()=>{
+ const page=b.dataset.page;
+ if(!secretPagesVisited.includes(page))secretPagesVisited.push(page);
+ if(page==="news")secretNewsVisited=true;
+ const available=[...document.querySelectorAll(".tab-button[data-page]")].filter(x=>!x.hidden).map(x=>x.dataset.page);
+ if(available.every(x=>secretPagesVisited.includes(x)))secretPageExplorer=true;
+ checkAchievements();saveGame();
+}));
+loadGame();updateSettings();build();placeSecretBricks();grantOfflineEarnings();saveGame();if(!nextGoldenSpawnAt)scheduleGolden();checkAchievements();renderAchievements();render();
+let lastTick=Date.now();
+setInterval(()=>{
+const now=Date.now();const elapsed=Math.min((now-lastTick)/1000,5);lastTick=now;
+if(goldenVisible&&now>=goldenExpiresAt)expireGolden();
+if(goldenVisible)$("golden").classList.toggle("brick-fading",goldenExpiresAt-now<=1200);
+if(rainbowVisible)$("rainbowBrick").classList.toggle("brick-fading",rainbowExpiresAt-now<=1200);
+if(rainbowVisible&&now>=rainbowExpiresAt)endRainbow();
+if(comboClicks&&now-lastComboClickAt>2000){comboClicks=0;render();}
+if(now>=nextGoldenSpawnAt)spawnGolden(now);
+
+playSeconds+=elapsed;
+const n=sps()*elapsed;if(n>0)gain(n,true);
+else render();
+},100);
+setInterval(saveGame,1000);
+window.addEventListener("pagehide",saveGame);
+window.addEventListener("beforeunload",saveGame);
+</script>
+<div id="achievementToastStack" class="achievement-toast-stack" aria-live="polite" aria-atomic="false"></div></body>
+</html>
